@@ -1,0 +1,61 @@
+@import "maplibre-gl/dist/maplibre-gl.css";
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    var(--font-bricolage-sans), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: var(--font-fraunces-display), ui-serif, Georgia, serif;
+  --color-paper: #f8f0dc;
+  --color-paper-strong: #ead8b1;
+  --color-malt: #b7672b;
+  --color-malt-dark: #653212;
+  --color-hop: #3f5e2d;
+  --color-cellar: #14281d;
+  --color-foam: #fff8ea;
+  --color-accent: #d34f2a;
+  --color-stone: #8f7f68;
+}
+
+:root {
+  --paper: var(--color-paper);
+  --paper-strong: var(--color-paper-strong);
+  --ink: var(--color-cellar);
+  --panel: rgba(255, 248, 234, 0.78);
+  --panel-strong: rgba(255, 248, 234, 0.92);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(211, 79, 42, 0.18),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(63, 94, 45, 0.16),
+      transparent 25%
+    ),
+    linear-gradient(180deg, #fff7e6 0%, #f8f0dc 45%, #f4e6c8 100%);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(20, 40, 29, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 40, 29, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  content: "";
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.48), transparent 90%);
+}
+
+::selection {
+  background: rgba(183, 103, 43, 0.22);
+}
