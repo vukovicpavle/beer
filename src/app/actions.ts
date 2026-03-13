@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { UserRole } from "../../generated/prisma";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -179,10 +180,31 @@ const deleteEntitySchema = z.object({
   id: z.string().trim().min(1),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8).max(72),
+    passwordConfirm: z.string().min(8).max(72),
+    token: z.string().trim().min(20),
+  })
+  .refine((value) => value.password === value.passwordConfirm, {
+    message: "Passwords must match",
+    path: ["passwordConfirm"],
+  });
+
 function readFormString(formData: FormData, key: string) {
   const value = formData.get(key);
 
   return typeof value === "string" ? value : "";
+}
+
+function readRedirectTarget(formData: FormData, key: string, fallback: string) {
+  const value = readFormString(formData, key).trim();
+
+  return value.startsWith("/") ? value : fallback;
 }
 
 async function requireAdminSession() {
@@ -229,6 +251,8 @@ async function assertAdminMutationAllowed(
 }
 
 export async function signUpWithEmailPassword(formData: FormData) {
+  const redirectTo = readRedirectTarget(formData, "redirectTo", "/club");
+  const failureTo = readRedirectTarget(formData, "failureTo", "/auth/register");
   const parsed = memberAuthSchema.safeParse({
     city: formData.get("city"),
     displayName: formData.get("displayName"),
@@ -237,7 +261,7 @@ export async function signUpWithEmailPassword(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect("/club?error=signup-invalid");
+    redirect(`${failureTo}?error=signup-invalid`);
   }
 
   const existingUser = await db.user.findUnique({
@@ -246,7 +270,7 @@ export async function signUpWithEmailPassword(formData: FormData) {
   });
 
   if (existingUser) {
-    redirect("/club?error=signup-taken");
+    redirect(`${failureTo}?error=signup-taken`);
   }
 
   const adminCount = await db.user.count({
@@ -271,11 +295,11 @@ export async function signUpWithEmailPassword(formData: FormData) {
     await signIn("member-credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/club",
+      redirectTo,
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect("/club?error=signin-failed");
+      redirect(`${failureTo}?error=signin-failed`);
     }
 
     throw error;
@@ -283,22 +307,24 @@ export async function signUpWithEmailPassword(formData: FormData) {
 }
 
 export async function signInWithEmailPassword(formData: FormData) {
+  const redirectTo = readRedirectTarget(formData, "redirectTo", "/club");
+  const failureTo = readRedirectTarget(formData, "failureTo", "/auth/login");
   const email = readFormString(formData, "email").trim().toLowerCase();
   const password = readFormString(formData, "password").trim();
 
   if (!email || password.length < 8) {
-    redirect("/club?error=signin-invalid");
+    redirect(`${failureTo}?error=signin-invalid`);
   }
 
   try {
     await signIn("member-credentials", {
       email,
       password,
-      redirectTo: "/club",
+      redirectTo,
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      redirect("/club?error=signin-failed");
+      redirect(`${failureTo}?error=signin-failed`);
     }
 
     throw error;
@@ -306,26 +332,131 @@ export async function signInWithEmailPassword(formData: FormData) {
 }
 
 export async function signInWithGuestPass(formData: FormData) {
+  const redirectTo = readRedirectTarget(formData, "redirectTo", "/club");
+  const failureTo = readRedirectTarget(formData, "failureTo", "/auth/login");
   const displayName = readFormString(formData, "displayName").trim();
   const city = readFormString(formData, "city").trim();
 
   if (displayName.length < 2) {
-    redirect("/club?error=guest-pass");
+    redirect(`${failureTo}?error=guest-pass`);
   }
 
   await signIn("guest-pass", {
     city,
     displayName,
-    redirectTo: "/club",
+    redirectTo,
   });
 }
 
-export async function signInWithDiscord() {
+export async function signInWithDiscord(formData?: FormData) {
+  const redirectTo = formData
+    ? readRedirectTarget(formData, "redirectTo", "/club")
+    : "/club";
+  const failureTo = formData
+    ? readRedirectTarget(formData, "failureTo", "/auth/login")
+    : "/auth/login";
+
   if (!env.AUTH_DISCORD_ID || !env.AUTH_DISCORD_SECRET) {
-    redirect("/club?error=discord-unavailable");
+    redirect(`${failureTo}?error=discord-unavailable`);
   }
 
-  await signIn("discord", { redirectTo: "/club" });
+  await signIn("discord", { redirectTo });
+}
+
+export async function requestPasswordResetAction(formData: FormData) {
+  const failureTo = readRedirectTarget(
+    formData,
+    "failureTo",
+    "/auth/forgot-password",
+  );
+  const parsed = forgotPasswordSchema.safeParse({
+    email: formData.get("email"),
+  });
+
+  if (!parsed.success) {
+    redirect(`${failureTo}?error=forgot-invalid`);
+  }
+
+  const user = await db.user.findUnique({
+    where: { email: parsed.data.email },
+    select: { email: true, passwordHash: true },
+  });
+
+  if (!user?.passwordHash) {
+    redirect(`${failureTo}?sent=1`);
+  }
+
+  const identifier = `password-reset:${parsed.data.email}`;
+  const token = randomBytes(24).toString("hex");
+
+  await db.verificationToken.deleteMany({
+    where: { identifier },
+  });
+
+  await db.verificationToken.create({
+    data: {
+      expires: new Date(Date.now() + 1000 * 60 * 60),
+      identifier,
+      token,
+    },
+  });
+
+  redirect(
+    `/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(parsed.data.email)}&mode=direct`,
+  );
+}
+
+export async function resetPasswordAction(formData: FormData) {
+  const failureTo = readRedirectTarget(
+    formData,
+    "failureTo",
+    "/auth/reset-password",
+  );
+  const parsed = resetPasswordSchema.safeParse({
+    password: formData.get("password"),
+    passwordConfirm: formData.get("passwordConfirm"),
+    token: formData.get("token"),
+  });
+
+  if (!parsed.success) {
+    redirect(
+      `${failureTo}?token=${encodeURIComponent(readFormString(formData, "token"))}&error=reset-invalid`,
+    );
+  }
+
+  const resetToken = await db.verificationToken.findUnique({
+    where: { token: parsed.data.token },
+  });
+
+  if (
+    !resetToken ||
+    resetToken.expires < new Date() ||
+    !resetToken.identifier.startsWith("password-reset:")
+  ) {
+    redirect("/auth/forgot-password?error=reset-expired");
+  }
+
+  const email = resetToken.identifier.replace(/^password-reset:/, "");
+  const user = await db.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+
+  if (!user) {
+    await db.verificationToken.delete({ where: { token: parsed.data.token } });
+    redirect("/auth/forgot-password?error=reset-expired");
+  }
+
+  await db.user.update({
+    where: { id: user.id },
+    data: { passwordHash: hashPassword(parsed.data.password) },
+  });
+
+  await db.verificationToken.deleteMany({
+    where: { identifier: resetToken.identifier },
+  });
+
+  redirect("/auth/login?success=password-reset");
 }
 
 export async function signOutAction() {

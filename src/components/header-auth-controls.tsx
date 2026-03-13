@@ -14,7 +14,7 @@ export async function HeaderAuthControls() {
   if (!session?.user) {
     return (
       <Button asChild size="sm">
-        <Link href="/club">Join the club</Link>
+        <Link href="/auth/login">Sign in</Link>
       </Button>
     );
   }

@@ -1,31 +1,13 @@
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 
-import {
-  signInWithDiscord,
-  signInWithEmailPassword,
-  signInWithGuestPass,
-  signUpWithEmailPassword,
-} from "~/app/actions";
-import { PendingButton } from "~/components/pending-button";
-import { env } from "~/env";
+import { Button } from "~/components/ui/button";
 import { auth } from "~/server/auth";
 import { getMemberSnapshot } from "~/server/services/member";
 
 const errorCopy: Record<string, string> = {
   "admin-only":
     "Admin access is restricted to members with elevated permissions.",
-  "discord-unavailable":
-    "Discord sign-in is wired, but the provider credentials are not configured yet.",
-  "guest-pass":
-    "Guest pass needs at least a display name so the profile can be created.",
-  "signin-failed":
-    "The email or password did not match an existing Hop Atlas account.",
-  "signin-invalid":
-    "Email sign-in needs a valid email address and an 8+ character password.",
-  "signup-invalid":
-    "Sign-up requires a display name, email address, and secure password.",
-  "signup-taken": "That email is already attached to a Hop Atlas account.",
 };
 
 export default async function ClubPage({
@@ -41,7 +23,6 @@ export default async function ClubPage({
   const member = session?.user?.id
     ? await getMemberSnapshot(session.user.id)
     : null;
-  const hasDiscord = Boolean(env.AUTH_DISCORD_ID && env.AUTH_DISCORD_SECRET);
 
   return (
     <main className="px-6 pt-6 pb-20 md:pt-10 md:pb-24">
@@ -68,7 +49,7 @@ export default async function ClubPage({
             <p className="mt-2 text-3xl font-semibold">
               {session?.user
                 ? `Signed in as ${session.user.name ?? "member"}`
-                : "Guest access ready"}
+                : "Authentication moved to /auth"}
             </p>
           </div>
         </section>
@@ -283,161 +264,44 @@ export default async function ClubPage({
             ) : null}
           </>
         ) : (
-          <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr_0.85fr]">
+          <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <article className="rounded-[1.75rem] border border-black/10 bg-white/70 p-6">
               <p className="text-sm font-semibold tracking-[0.18em] text-[var(--color-hop)] uppercase">
-                Email membership
+                Membership required
               </p>
               <h2 className="mt-2 text-3xl font-semibold text-[var(--color-cellar)]">
-                Build a permanent account for routes, reviews, and admin access.
+                Club is now a dedicated member area.
               </h2>
-              <div className="mt-6 grid gap-6 md:grid-cols-2">
-                <form action={signUpWithEmailPassword} className="grid gap-4">
-                  <p className="text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-                    Sign up
-                  </p>
-                  <label className="grid gap-2 text-sm font-medium text-black/72">
-                    Display name
-                    <input
-                      name="displayName"
-                      placeholder="Pavle Hop Atlas"
-                      className="rounded-2xl border border-black/10 bg-[var(--panel)] px-4 py-3 outline-none"
-                    />
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium text-black/72">
-                    Email
-                    <input
-                      name="email"
-                      type="email"
-                      placeholder="name@example.com"
-                      className="rounded-2xl border border-black/10 bg-[var(--panel)] px-4 py-3 outline-none"
-                    />
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium text-black/72">
-                    Password
-                    <input
-                      name="password"
-                      type="password"
-                      placeholder="At least 8 characters"
-                      className="rounded-2xl border border-black/10 bg-[var(--panel)] px-4 py-3 outline-none"
-                    />
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium text-black/72">
-                    Home city
-                    <input
-                      name="city"
-                      placeholder="Belgrade, Munich, Portland"
-                      className="rounded-2xl border border-black/10 bg-[var(--panel)] px-4 py-3 outline-none"
-                    />
-                  </label>
-                  <PendingButton
-                    pendingLabel="Creating account..."
-                    className="inline-flex rounded-full bg-[var(--color-cellar)] px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
-                    type="submit"
-                  >
-                    Create account
-                  </PendingButton>
-                </form>
-
-                <form
-                  action={signInWithEmailPassword}
-                  className="grid gap-4 rounded-[1.5rem] border border-black/10 bg-[var(--panel)] p-5"
-                >
-                  <p className="text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-                    Sign in
-                  </p>
-                  <label className="grid gap-2 text-sm font-medium text-black/72">
-                    Email
-                    <input
-                      name="email"
-                      type="email"
-                      placeholder="name@example.com"
-                      className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 outline-none"
-                    />
-                  </label>
-                  <label className="grid gap-2 text-sm font-medium text-black/72">
-                    Password
-                    <input
-                      name="password"
-                      type="password"
-                      placeholder="Password"
-                      className="rounded-2xl border border-black/10 bg-white/80 px-4 py-3 outline-none"
-                    />
-                  </label>
-                  <div className="rounded-[1rem] bg-white/80 px-4 py-3 text-sm leading-7 text-black/65">
-                    Permanent accounts unlock email login, role-based access,
-                    and a clean path into the admin console.
-                  </div>
-                  <PendingButton
-                    pendingLabel="Signing in..."
-                    className="inline-flex rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-[var(--color-cellar)] transition hover:bg-black hover:text-[var(--color-foam)]"
-                    type="submit"
-                  >
-                    Sign in with email
-                  </PendingButton>
-                </form>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-black/68">
+                Authentication moved into dedicated subroutes, so the main app
+                stays focused on routes, reviews, and brewery discovery. Sign
+                in, register, or recover your password under /auth and then come
+                back here for your member data.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button asChild>
+                  <Link href="/auth/login">Sign in</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/auth/register">Create account</Link>
+                </Button>
+                <Button asChild variant="ghost">
+                  <Link href="/auth/forgot-password">Forgot password</Link>
+                </Button>
               </div>
-            </article>
-            <article className="rounded-[1.75rem] border border-black/10 bg-white/70 p-6">
-              <p className="text-sm font-semibold tracking-[0.18em] text-[var(--color-hop)] uppercase">
-                Guest pass
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold text-[var(--color-cellar)]">
-                Enter immediately and keep building your profile.
-              </h2>
-              <form action={signInWithGuestPass} className="mt-6 grid gap-4">
-                <label className="grid gap-2 text-sm font-medium text-black/72">
-                  Display name
-                  <input
-                    name="displayName"
-                    placeholder="Pavle, Mila, Hop Seeker"
-                    className="rounded-2xl border border-black/10 bg-[var(--panel)] px-4 py-3 outline-none"
-                  />
-                </label>
-                <label className="grid gap-2 text-sm font-medium text-black/72">
-                  Home city
-                  <input
-                    name="city"
-                    placeholder="Belgrade, Munich, Portland"
-                    className="rounded-2xl border border-black/10 bg-[var(--panel)] px-4 py-3 outline-none"
-                  />
-                </label>
-                <PendingButton
-                  pendingLabel="Creating pass..."
-                  className="inline-flex rounded-full bg-[var(--color-cellar)] px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
-                  type="submit"
-                >
-                  Start with guest pass
-                </PendingButton>
-              </form>
             </article>
             <article className="rounded-[1.75rem] border border-black/10 bg-[var(--color-cellar)] p-6 text-[var(--color-foam)]">
               <p className="text-sm font-semibold tracking-[0.18em] text-white/60 uppercase">
-                Provider sign-in
+                What stays here
               </p>
               <h2 className="mt-2 text-3xl font-semibold">
-                Connect a richer account when OAuth is ready.
+                Routes, reviews, and member history.
               </h2>
               <p className="mt-4 text-sm leading-7 text-white/76">
-                Guest pass gives you a working membership flow immediately.
-                Discord can sit alongside it for a fuller identity layer.
+                Once you sign in, Club becomes the home for saved routes,
+                authored tasting notes, home city context, and admin access when
+                your account is elevated.
               </p>
-              {hasDiscord ? (
-                <form action={signInWithDiscord} className="mt-6">
-                  <PendingButton
-                    pendingLabel="Redirecting..."
-                    className="inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-white/20"
-                    type="submit"
-                  >
-                    Continue with Discord
-                  </PendingButton>
-                </form>
-              ) : (
-                <div className="mt-6 rounded-[1.25rem] border border-white/10 bg-white/8 p-4 text-sm leading-7 text-white/72">
-                  Discord credentials are not configured yet, so guest pass is
-                  the active live auth path right now.
-                </div>
-              )}
             </article>
           </section>
         )}
