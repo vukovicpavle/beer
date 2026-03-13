@@ -33,6 +33,7 @@ export type BeerSummary = {
 };
 
 export type ReviewSummary = {
+  createdAt?: string;
   id: string;
   beerSlug: string;
   authorName: string;
@@ -184,6 +185,7 @@ export const beers: BeerSummary[] = [
 
 export const reviews: ReviewSummary[] = [
   {
+    createdAt: "2026-02-14T18:30:00.000Z",
     id: "rev-1",
     beerSlug: "river-saison",
     authorName: "Mila P.",
@@ -193,6 +195,7 @@ export const reviews: ReviewSummary[] = [
     visitedAt: "2026-02-14",
   },
   {
+    createdAt: "2026-01-18T16:20:00.000Z",
     id: "rev-2",
     beerSlug: "midnight-keller",
     authorName: "Jonas K.",
@@ -202,6 +205,7 @@ export const reviews: ReviewSummary[] = [
     visitedAt: "2026-01-18",
   },
   {
+    createdAt: "2026-03-03T20:10:00.000Z",
     id: "rev-3",
     beerSlug: "signal-glow",
     authorName: "Sara W.",
@@ -211,6 +215,7 @@ export const reviews: ReviewSummary[] = [
     visitedAt: "2026-03-03",
   },
   {
+    createdAt: "2026-02-02T21:30:00.000Z",
     id: "rev-4",
     beerSlug: "night-engine",
     authorName: "Elias R.",
@@ -220,6 +225,7 @@ export const reviews: ReviewSummary[] = [
     visitedAt: "2026-02-02",
   },
   {
+    createdAt: "2026-01-29T19:15:00.000Z",
     id: "rev-5",
     beerSlug: "granite-smoke",
     authorName: "Lea V.",

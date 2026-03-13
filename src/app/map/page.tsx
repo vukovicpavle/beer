@@ -2,7 +2,7 @@ import { BeerMap } from "~/components/beer-map";
 import { getCatalogSnapshot } from "~/server/services/catalog";
 
 export default async function MapPage() {
-  const { breweries } = await getCatalogSnapshot();
+  const { beers, breweries, reviews, routes } = await getCatalogSnapshot();
 
   return (
     <main className="px-6 pt-6 pb-20 md:pt-10 md:pb-24">
@@ -19,7 +19,12 @@ export default async function MapPage() {
             and whether it belongs in a casual crawl or a destination detour.
           </p>
         </div>
-        <BeerMap breweries={breweries} />
+        <BeerMap
+          beers={beers}
+          breweries={breweries}
+          reviews={reviews}
+          routes={routes}
+        />
       </div>
     </main>
   );

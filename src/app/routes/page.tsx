@@ -1,8 +1,14 @@
 import { RoutePlanner } from "~/components/route-planner";
+import { auth } from "~/server/auth";
 import { getCatalogSnapshot } from "~/server/services/catalog";
+import { getMemberSnapshot } from "~/server/services/member";
 
 export default async function RoutesPage() {
-  const { breweries, routes } = await getCatalogSnapshot();
+  const session = await auth();
+  const member = session?.user?.id
+    ? await getMemberSnapshot(session.user.id)
+    : null;
+  const { beers, breweries, routes } = await getCatalogSnapshot();
 
   return (
     <main className="px-6 pt-6 pb-20 md:pt-10 md:pb-24">
@@ -19,7 +25,13 @@ export default async function RoutesPage() {
             plan grounded in actual drinking energy instead of checkbox tourism.
           </p>
         </div>
-        <RoutePlanner routes={routes} breweries={breweries} />
+        <RoutePlanner
+          beers={beers}
+          routes={routes}
+          breweries={breweries}
+          canSave={Boolean(session?.user)}
+          savedRouteSlugs={member?.savedRoutes.map((route) => route.slug) ?? []}
+        />
       </div>
     </main>
   );

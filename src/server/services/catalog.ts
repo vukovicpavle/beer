@@ -36,6 +36,7 @@ export async function getCatalogSnapshot(): Promise<CatalogSnapshot> {
       }),
       db.review.findMany({
         include: { beer: true },
+        where: { published: true },
         orderBy: { createdAt: "desc" },
         take: 12,
       }),
@@ -72,6 +73,7 @@ export async function getCatalogSnapshot(): Promise<CatalogSnapshot> {
         brewerySlug: beer.brewery.slug,
       })),
       reviews: reviews.map((review) => ({
+        createdAt: review.createdAt.toISOString(),
         id: review.id,
         beerSlug: review.beer.slug,
         authorName: review.authorName,

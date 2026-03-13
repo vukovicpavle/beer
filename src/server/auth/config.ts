@@ -1,9 +1,37 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
+import { z } from "zod";
 
 import { env } from "~/env";
+import { verifyPassword } from "~/server/auth/password";
 import { db } from "~/server/db";
+import { isAdminEmail } from "~/server/services/admin";
+
+const guestPassSchema = z.object({
+  city: z
+    .string()
+    .trim()
+    .max(40)
+    .transform((value) => value || null),
+  displayName: z.string().trim().min(2).max(40),
+});
+
+const memberCredentialsSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(8).max(72),
+});
+
+function createGuestEmail(displayName: string) {
+  const slug =
+    displayName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "member";
+
+  return `guest+${slug}-${Date.now()}@hopatlas.local`;
+}
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -14,16 +42,11 @@ import { db } from "~/server/db";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
+      city?: string | null;
       id: string;
-      // ...other properties
-      // role: UserRole;
+      role: "ADMIN" | "MEMBER";
     } & DefaultSession["user"];
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
 /**
@@ -32,23 +55,106 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  providers:
-    env.AUTH_DISCORD_ID && env.AUTH_DISCORD_SECRET
+  providers: [
+    Credentials({
+      id: "guest-pass",
+      name: "Guest Pass",
+      credentials: {
+        city: { label: "City", type: "text" },
+        displayName: { label: "Display name", type: "text" },
+      },
+      authorize: async (credentials) => {
+        const parsed = guestPassSchema.safeParse(credentials);
+
+        if (!parsed.success) {
+          return null;
+        }
+
+        return db.user.create({
+          data: {
+            city: parsed.data.city,
+            email: createGuestEmail(parsed.data.displayName),
+            name: parsed.data.displayName,
+          },
+        });
+      },
+    }),
+    Credentials({
+      id: "member-credentials",
+      name: "Email and password",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        const parsed = memberCredentialsSchema.safeParse(credentials);
+
+        if (!parsed.success) {
+          return null;
+        }
+
+        const user = await db.user.findUnique({
+          where: { email: parsed.data.email },
+        });
+
+        if (!user?.passwordHash) {
+          return null;
+        }
+
+        if (!verifyPassword(parsed.data.password, user.passwordHash)) {
+          return null;
+        }
+
+        if (user.role !== "ADMIN" && isAdminEmail(user.email)) {
+          return db.user.update({
+            where: { id: user.id },
+            data: { role: "ADMIN" },
+          });
+        }
+
+        return user;
+      },
+    }),
+    ...(env.AUTH_DISCORD_ID && env.AUTH_DISCORD_SECRET
       ? [
           DiscordProvider({
             clientId: env.AUTH_DISCORD_ID,
             clientSecret: env.AUTH_DISCORD_SECRET,
           }),
         ]
-      : [],
+      : []),
+  ],
   adapter: PrismaAdapter(db),
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    signIn: async ({ user }) => {
+      const member = user as typeof user & { role?: "ADMIN" | "MEMBER" };
+
+      if (user.email && isAdminEmail(user.email) && member.role !== "ADMIN") {
+        await db.user.update({
+          where: { id: user.id },
+          data: { role: "ADMIN" },
+        });
+
+        member.role = "ADMIN";
+      }
+
+      return true;
+    },
+    session: ({ session, user }) => {
+      const member = user as typeof user & {
+        city?: string | null;
+        role?: "ADMIN" | "MEMBER";
+      };
+
+      return {
+        ...session,
+        user: {
+          city: member.city ?? null,
+          ...session.user,
+          id: user.id,
+          role: member.role ?? "MEMBER",
+        },
+      };
+    },
   },
 } satisfies NextAuthConfig;

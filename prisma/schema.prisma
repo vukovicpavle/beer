@@ -8,6 +8,11 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+    MEMBER
+    ADMIN
+}
+
 model Account {
     id                       String  @id @default(cuid())
     userId                   String
@@ -42,9 +47,12 @@ model User {
     emailVerified DateTime?
     image         String?
     city          String?
+    passwordHash  String?
+    role          UserRole  @default(MEMBER)
     accounts      Account[]
     sessions      Session[]
     reviews       Review[]
+    savedRoutes   SavedRoute[]
 }
 
 model VerificationToken {
@@ -104,6 +112,7 @@ model Review {
     title      String
     body       String
     visitedAt  DateTime?
+    published  Boolean   @default(true)
     createdAt  DateTime  @default(now())
 
     @@index([beerId])
@@ -122,9 +131,23 @@ model Route {
     createdAt       DateTime    @default(now())
     updatedAt       DateTime    @updatedAt
     stops           RouteStop[]
+    savedBy         SavedRoute[]
 
     @@index([city])
     @@index([vibe])
+}
+
+model SavedRoute {
+    id        String   @id @default(cuid())
+    userId    String
+    routeId   String
+    note      String?
+    createdAt DateTime @default(now())
+    route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, routeId])
+    @@index([routeId])
 }
 
 model RouteStop {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BadgeCheck,
   Compass,
   MapPinned,
   NotebookText,
@@ -31,6 +32,13 @@ const featureCards = [
     description:
       "Build tasting runs by vibe, city, and stop-count for walkable sessions or deep cellar hunts.",
     icon: Compass,
+  },
+  {
+    href: "/club",
+    title: "Member club",
+    description:
+      "Use a guest pass or OAuth later to save routes, keep authored reviews, and turn visits into a repeatable profile.",
+    icon: BadgeCheck,
   },
   {
     href: "/journal",
@@ -140,7 +148,7 @@ export default async function Home() {
               </h2>
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {featureCards.map(({ href, title, description, icon: Icon }) => (
               <Link
                 key={title}
@@ -203,6 +211,37 @@ export default async function Home() {
                 </p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-14 md:py-20">
+        <div className="mx-auto grid w-full max-w-6xl gap-6 rounded-[2rem] border border-black/10 bg-white/60 p-8 md:grid-cols-[1fr_0.9fr] md:p-10">
+          <div>
+            <p className="text-sm font-semibold tracking-[0.22em] text-[var(--color-hop)] uppercase">
+              Membership layer
+            </p>
+            <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--color-cellar)]">
+              Save route ideas, publish reviews, and keep a beer identity that
+              travels with you.
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-black/68">
+              The Club flow now supports instant guest passes, so the live app
+              has working auth even before you plug in a full OAuth provider.
+            </p>
+          </div>
+          <div className="grid gap-4 md:justify-self-end">
+            <Link
+              href="/club"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-cellar)] px-6 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
+            >
+              Open Club
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <p className="max-w-md text-sm leading-7 text-black/60">
+              Guest membership is active now. Discord can be layered on top when
+              you want a richer identity flow in production.
+            </p>
           </div>
         </div>
       </section>

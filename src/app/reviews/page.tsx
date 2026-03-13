@@ -1,7 +1,10 @@
+import { ReviewsStudio } from "~/components/reviews-studio";
+import { auth } from "~/server/auth";
 import { getCatalogSnapshot } from "~/server/services/catalog";
 
 export default async function ReviewsPage() {
-  const { beers, reviews } = await getCatalogSnapshot();
+  const session = await auth();
+  const { beers, breweries, reviews } = await getCatalogSnapshot();
   const averageRating =
     reviews.reduce((total, review) => total + review.rating, 0) /
     reviews.length;
@@ -32,41 +35,13 @@ export default async function ReviewsPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {reviews.map((review) => {
-            const beer = beers.find((entry) => entry.slug === review.beerSlug);
-
-            return (
-              <article
-                key={review.id}
-                className="rounded-[1.75rem] border border-black/10 bg-white/65 p-6"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold tracking-[0.18em] text-[var(--color-malt)] uppercase">
-                      {beer?.style ?? "Featured pour"}
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold text-[var(--color-cellar)]">
-                      {review.title}
-                    </h2>
-                  </div>
-                  <span className="rounded-full bg-[var(--color-paper-strong)] px-3 py-1 text-sm font-semibold text-[var(--color-malt-dark)]">
-                    {review.rating}/5
-                  </span>
-                </div>
-                <p className="mt-4 text-sm font-medium text-black/50">
-                  {beer?.name ?? review.beerSlug}
-                </p>
-                <p className="mt-4 text-sm leading-7 text-black/70">
-                  {review.body}
-                </p>
-                <p className="mt-6 text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-                  {review.authorName}
-                </p>
-              </article>
-            );
-          })}
-        </div>
+        <ReviewsStudio
+          beers={beers}
+          breweries={breweries}
+          canWrite={Boolean(session?.user)}
+          defaultAuthorName={session?.user?.name}
+          reviews={reviews}
+        />
       </div>
     </main>
   );
