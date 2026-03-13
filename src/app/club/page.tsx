@@ -33,13 +33,11 @@ export default async function ClubPage({
               Club
             </p>
             <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl text-[var(--color-cellar)]">
-              Keep routes, reviews, and brewery ideas attached to a real member
-              profile.
+              Your account, saved routes, and reviews in one place.
             </h1>
             <p className="mt-5 max-w-3xl text-lg leading-8 text-black/68">
-              Hop Atlas Club is where discovery becomes habit. Save route ideas,
-              publish tasting notes, and keep a clear record of what deserves a
-              second visit.
+              Track what you want to revisit, keep your review history, and get
+              back to the places and beers you care about.
             </p>
           </div>
           <div className="rounded-[1.5rem] bg-[var(--color-cellar)] px-6 py-5 text-[var(--color-foam)]">
@@ -49,7 +47,7 @@ export default async function ClubPage({
             <p className="mt-2 text-3xl font-semibold">
               {session?.user
                 ? `Signed in as ${session.user.name ?? "member"}`
-                : "Authentication moved to /auth"}
+                : "Sign in to view your account"}
             </p>
           </div>
         </section>
@@ -89,7 +87,7 @@ export default async function ClubPage({
               </article>
               <article className="rounded-[1.75rem] border border-black/10 bg-white/70 p-6">
                 <p className="text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-                  Passport spread
+                  Styles tried
                 </p>
                 <p className="mt-3 text-4xl font-semibold text-[var(--color-cellar)]">
                   {member?.styleCount ?? 0}
@@ -104,7 +102,7 @@ export default async function ClubPage({
             {member?.nextRoute ? (
               <section className="rounded-[1.75rem] border border-black/10 bg-[var(--color-cellar)] p-6 text-[var(--color-foam)]">
                 <p className="text-xs font-semibold tracking-[0.18em] text-white/60 uppercase">
-                  Next layer
+                  Suggested route
                 </p>
                 <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                   <div>
@@ -180,8 +178,8 @@ export default async function ClubPage({
                     ))
                   ) : (
                     <div className="rounded-[1.25rem] border border-dashed border-black/15 bg-[var(--panel)] p-6 text-sm leading-7 text-black/65">
-                      Nothing saved yet. Use the route planner to pin the best
-                      tasting runs to your profile.
+                      Nothing saved yet. Use the route planner to save places
+                      you want to visit.
                     </div>
                   )}
                 </div>
@@ -234,8 +232,7 @@ export default async function ClubPage({
                     ))
                   ) : (
                     <div className="rounded-[1.25rem] border border-dashed border-black/15 bg-[var(--panel)] p-6 text-sm leading-7 text-black/65">
-                      You have not published a tasting note yet. The review
-                      studio is ready once you find a beer worth explaining.
+                      You have not published a review yet.
                     </div>
                   )}
                 </div>
@@ -270,13 +267,11 @@ export default async function ClubPage({
                 Membership required
               </p>
               <h2 className="mt-2 text-3xl font-semibold text-[var(--color-cellar)]">
-                Club is now a dedicated member area.
+                Sign in to access your account.
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-black/68">
-                Authentication moved into dedicated subroutes, so the main app
-                stays focused on routes, reviews, and brewery discovery. Sign
-                in, register, or recover your password under /auth and then come
-                back here for your member data.
+                View saved routes, manage your reviews, and access member tools
+                after you sign in.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild>
@@ -292,15 +287,13 @@ export default async function ClubPage({
             </article>
             <article className="rounded-[1.75rem] border border-black/10 bg-[var(--color-cellar)] p-6 text-[var(--color-foam)]">
               <p className="text-sm font-semibold tracking-[0.18em] text-white/60 uppercase">
-                What stays here
+                In your account
               </p>
               <h2 className="mt-2 text-3xl font-semibold">
-                Routes, reviews, and member history.
+                Saved routes and review history.
               </h2>
               <p className="mt-4 text-sm leading-7 text-white/76">
-                Once you sign in, Club becomes the home for saved routes,
-                authored tasting notes, home city context, and admin access when
-                your account is elevated.
+                Keep your activity in one place and return to it anytime.
               </p>
             </article>
           </section>

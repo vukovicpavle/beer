@@ -17,7 +17,7 @@ export default async function RoutesPage() {
         <PageHero
           eyebrow="Route planner"
           title="Turn scattered beer ideas into a route with a point of view."
-          description="Controls are tighter, recommendations surface faster, and saved routes remain attached to the member profile instead of getting lost in the planning flow."
+          description="Choose a city, filter the options, and save the routes you want to try."
           stats={[
             { label: "Routes", value: String(routes.length) },
             { label: "Saved", value: String(member?.savedRoutes.length ?? 0) },

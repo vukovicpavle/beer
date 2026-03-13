@@ -44,7 +44,7 @@ export default async function ResetPasswordPage({
     <AuthShell
       eyebrow="Reset"
       title="Choose a new password"
-      description="This reset flow uses a one-time token. Once the password is updated, the token is deleted and the next sign-in uses the new password immediately."
+      description="Enter a new password for your account."
       helper={
         <Button asChild variant="ghost" size="sm">
           <Link href="/auth/forgot-password">Request a new reset link</Link>
@@ -54,8 +54,7 @@ export default async function ResetPasswordPage({
       <div className="grid gap-6">
         {mode === "direct" ? (
           <div className="rounded-[1.25rem] border border-amber-900/10 bg-[var(--color-paper-strong)] px-4 py-3 text-sm font-medium text-[var(--color-cellar)]">
-            Email delivery is not wired yet, so Hop Atlas opened the reset step
-            directly for {email ?? "this account"}.
+            Reset password for {email ?? "this account"}.
           </div>
         ) : null}
         {errorMessage ? (
@@ -98,8 +97,7 @@ export default async function ResetPasswordPage({
         ) : (
           <div className="grid gap-4">
             <div className="rounded-[1.25rem] border border-black/10 bg-[var(--panel)] px-4 py-4 text-sm leading-7 text-black/66">
-              No valid reset token was supplied. Request a new reset and start
-              again.
+              This reset link is invalid or expired.
             </div>
             <Button asChild>
               <Link href="/auth/forgot-password">Request reset</Link>

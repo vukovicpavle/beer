@@ -32,14 +32,14 @@ export default async function ForgotPasswordPage({
     typeof errorCode === "string" ? errorCopy[errorCode] : undefined;
   const sentMessage =
     sentCode === "1"
-      ? "If that account exists, the next reset step is ready."
+      ? "If the account exists, you can continue with password reset."
       : undefined;
 
   return (
     <AuthShell
       eyebrow="Recovery"
-      title="Start a password reset"
-      description="Email delivery is not wired yet, so Hop Atlas will move you directly into the reset step after you request it."
+      title="Reset your password"
+      description="Enter your email address to continue."
       helper={
         <Button asChild variant="ghost" size="sm">
           <Link href="/auth/login">Back to sign in</Link>
@@ -68,7 +68,7 @@ export default async function ForgotPasswordPage({
             className="inline-flex rounded-full bg-[var(--color-cellar)] px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
             type="submit"
           >
-            Continue to reset
+            Continue
           </PendingButton>
         </form>
       </div>

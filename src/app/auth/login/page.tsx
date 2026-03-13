@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import {
-  signInWithDiscord,
-  signInWithEmailPassword,
-  signInWithGuestPass,
-} from "~/app/actions";
+import { signInWithEmailPassword } from "~/app/actions";
 import { AuthShell } from "~/components/auth-shell";
 import { PendingButton } from "~/components/pending-button";
 import { Button } from "~/components/ui/button";
@@ -13,8 +9,6 @@ import { Input } from "~/components/ui/input";
 import { auth } from "~/server/auth";
 
 const errorCopy: Record<string, string> = {
-  "discord-unavailable": "Discord sign-in is not configured yet.",
-  "guest-pass": "Guest pass needs at least a display name.",
   "signin-failed": "The email or password did not match an existing account.",
   "signin-invalid": "Enter a valid email address and an 8+ character password.",
 };
@@ -50,9 +44,9 @@ export default async function LoginPage({
 
   return (
     <AuthShell
-      eyebrow="Auth"
-      title="Sign in to your Hop Atlas account"
-      description="Use your permanent email account, take a guest pass for instant access, or continue with Discord when OAuth is wired."
+      eyebrow="Sign in"
+      title="Welcome back"
+      description="Sign in with your email address and password."
       helper={
         <div className="flex flex-wrap gap-3">
           <Button asChild variant="outline" size="sm">
@@ -97,43 +91,6 @@ export default async function LoginPage({
             type="submit"
           >
             Sign in
-          </PendingButton>
-        </form>
-
-        <div className="grid gap-3 rounded-[1.5rem] border border-black/10 bg-[var(--panel)] p-5">
-          <p className="text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-            Guest pass
-          </p>
-          <form action={signInWithGuestPass} className="grid gap-4">
-            <input type="hidden" name="redirectTo" value={redirectTo} />
-            <input type="hidden" name="failureTo" value="/auth/login" />
-            <label className="grid gap-2 text-sm font-medium text-black/72">
-              Display name
-              <Input name="displayName" placeholder="Pavle, Mila, Hop Seeker" />
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-black/72">
-              Home city
-              <Input name="city" placeholder="Belgrade, Munich, Portland" />
-            </label>
-            <PendingButton
-              pendingLabel="Creating pass..."
-              className="inline-flex rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-semibold text-[var(--color-cellar)] transition hover:bg-black hover:text-[var(--color-foam)]"
-              type="submit"
-            >
-              Continue with guest pass
-            </PendingButton>
-          </form>
-        </div>
-
-        <form action={signInWithDiscord}>
-          <input type="hidden" name="redirectTo" value={redirectTo} />
-          <input type="hidden" name="failureTo" value="/auth/login" />
-          <PendingButton
-            pendingLabel="Redirecting..."
-            className="inline-flex rounded-full border border-black/10 bg-[var(--color-paper-strong)] px-5 py-3 text-sm font-semibold text-[var(--color-malt-dark)] transition hover:bg-[var(--color-paper)]"
-            type="submit"
-          >
-            Continue with Discord
           </PendingButton>
         </form>
       </div>

@@ -644,7 +644,7 @@ export function AdminWorkbench({
               <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-                    {user.email ?? "Guest pass member"}
+                    {user.email ?? "No email"}
                   </p>
                   <h3 className="mt-2 text-xl font-semibold text-[var(--color-cellar)]">
                     {user.name ?? "Unnamed member"}

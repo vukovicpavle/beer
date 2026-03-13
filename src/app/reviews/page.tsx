@@ -16,7 +16,7 @@ export default async function ReviewsPage() {
         <PageHero
           eyebrow="Reviews"
           title="Short tasting notes that actually help someone choose a beer."
-          description="The review surface now separates composition from browsing so you can write cleanly and scan cleanly instead of doing both in one crowded panel."
+          description="Browse recent reviews or add your own notes for beers you have tried."
           stats={[
             { label: "Average", value: `${averageRating.toFixed(1)}/5` },
             { label: "Published", value: String(reviews.length) },

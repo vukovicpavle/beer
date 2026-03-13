@@ -1,37 +1,16 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import DiscordProvider from "next-auth/providers/discord";
 import { z } from "zod";
 
-import { env } from "~/env";
 import { verifyPassword } from "~/server/auth/password";
 import { db } from "~/server/db";
 import { isAdminEmail } from "~/server/services/admin";
-
-const guestPassSchema = z.object({
-  city: z
-    .string()
-    .trim()
-    .max(40)
-    .transform((value) => value || null),
-  displayName: z.string().trim().min(2).max(40),
-});
 
 const memberCredentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8).max(72),
 });
-
-function createGuestEmail(displayName: string) {
-  const slug =
-    displayName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "member";
-
-  return `guest+${slug}-${Date.now()}@hopatlas.local`;
-}
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -56,29 +35,6 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    Credentials({
-      id: "guest-pass",
-      name: "Guest Pass",
-      credentials: {
-        city: { label: "City", type: "text" },
-        displayName: { label: "Display name", type: "text" },
-      },
-      authorize: async (credentials) => {
-        const parsed = guestPassSchema.safeParse(credentials);
-
-        if (!parsed.success) {
-          return null;
-        }
-
-        return db.user.create({
-          data: {
-            city: parsed.data.city,
-            email: createGuestEmail(parsed.data.displayName),
-            name: parsed.data.displayName,
-          },
-        });
-      },
-    }),
     Credentials({
       id: "member-credentials",
       name: "Email and password",
@@ -115,14 +71,6 @@ export const authConfig = {
         return user;
       },
     }),
-    ...(env.AUTH_DISCORD_ID && env.AUTH_DISCORD_SECRET
-      ? [
-          DiscordProvider({
-            clientId: env.AUTH_DISCORD_ID,
-            clientSecret: env.AUTH_DISCORD_SECRET,
-          }),
-        ]
-      : []),
   ],
   adapter: PrismaAdapter(db),
   callbacks: {

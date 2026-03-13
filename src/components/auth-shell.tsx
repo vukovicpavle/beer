@@ -36,16 +36,6 @@ export function AuthShell({
           <p className="mt-4 max-w-2xl text-base leading-8 text-black/68">
             {description}
           </p>
-          <div className="mt-8 grid gap-3 text-sm text-black/62">
-            <div className="rounded-[1.25rem] bg-white/70 p-4">
-              Email accounts are now isolated under auth routes, so the main app
-              stays focused on discovery and member data.
-            </div>
-            <div className="rounded-[1.25rem] bg-white/70 p-4">
-              Guest pass still exists for immediate access when you want to try
-              the app without a permanent account.
-            </div>
-          </div>
           {helper ? <div className="mt-6">{helper}</div> : null}
           <div className="mt-6 text-sm text-black/58">
             <Link

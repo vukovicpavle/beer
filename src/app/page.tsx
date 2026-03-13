@@ -45,9 +45,9 @@ const featureCards = [
   },
   {
     href: "/club",
-    title: "Member club",
+    title: "Account",
     description:
-      "Use a guest pass or OAuth later to save routes, keep authored reviews, and turn visits into a repeatable profile.",
+      "Save routes, manage reviews, and keep your activity in one place.",
     icon: BadgeCheck,
   },
   {
@@ -68,8 +68,8 @@ export default async function Home() {
       <section className="px-6 pt-8 pb-14 md:pt-12 md:pb-20">
         <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           <PageHero
-            eyebrow="Built on the T3 stack, shaped for beer discovery"
-            title="A serious beer app for planning better pours."
+            eyebrow="Beer discovery"
+            title="Find great breweries, plan routes, and keep useful reviews."
             description="Hop Atlas combines a discovery map, concise tasting reviews, editorial storytelling, and a route planner so beer lovers can move from inspiration to an actual night out."
             stats={[
               { label: "Featured beers", value: String(beers.length) },
@@ -157,15 +157,14 @@ export default async function Home() {
         <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2rem] border border-black/10 bg-[var(--color-cellar)] p-8 text-[var(--color-foam)] md:p-10">
             <p className="text-sm font-semibold tracking-[0.24em] text-white/60 uppercase">
-              Why this setup works
+              Community picks
             </p>
             <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl leading-tight">
-              Static-first UX, real backend foundations.
+              Recent reviews worth reading.
             </h2>
             <p className="mt-5 max-w-xl text-base leading-8 text-white/78">
-              The app ships with curated fallback content so the product feels
-              alive immediately, while Prisma models, tRPC routers, auth, and a
-              Postgres path are already in place for real member data.
+              Quick, specific reviews make it easier to decide what to order and
+              where to go next.
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -198,15 +197,13 @@ export default async function Home() {
         <div className="mx-auto grid w-full max-w-6xl gap-6 rounded-[2rem] border border-black/10 bg-white/60 p-8 md:grid-cols-[1fr_0.9fr] md:p-10">
           <div>
             <p className="text-sm font-semibold tracking-[0.22em] text-[var(--color-hop)] uppercase">
-              Membership layer
+              Your account
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--color-cellar)]">
-              Save route ideas, publish reviews, and keep a beer identity that
-              travels with you.
+              Save routes, write reviews, and pick up where you left off.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-8 text-black/68">
-              The Club flow now supports instant guest passes, so the live app
-              has working auth even before you plug in a full OAuth provider.
+              Your account keeps your saved routes and reviews together.
             </p>
           </div>
           <div className="grid gap-4 md:justify-self-end">
@@ -217,8 +214,7 @@ export default async function Home() {
               </Link>
             </Button>
             <p className="max-w-md text-sm leading-7 text-black/60">
-              Guest membership is active now. Discord can be layered on top when
-              you want a richer identity flow in production.
+              Sign in to save route ideas and manage your reviews.
             </p>
           </div>
         </div>
@@ -232,7 +228,7 @@ export default async function Home() {
                 Journal launch set
               </p>
               <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl text-[var(--color-cellar)]">
-                Editorial hooks for retention and SEO.
+                Beer guides and stories.
               </h2>
             </div>
             <Link

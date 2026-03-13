@@ -11,7 +11,7 @@ export default async function MapPage() {
         <PageHero
           eyebrow="Beer map"
           title="Scout standout breweries before you commit the night."
-          description="The map now favors quicker scanning: fewer competing surfaces, clearer brewery signal, and a steadier transition from search to selection."
+          description="Search breweries by city or style and compare them on one map."
           stats={[
             { label: "Breweries", value: String(breweries.length) },
             { label: "Routes", value: String(routes.length) },

@@ -7,7 +7,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { env } from "~/env";
 import { hashPassword } from "~/server/auth/password";
 import { auth, signIn, signOut } from "~/server/auth";
 import { db } from "~/server/db";
@@ -329,38 +328,6 @@ export async function signInWithEmailPassword(formData: FormData) {
 
     throw error;
   }
-}
-
-export async function signInWithGuestPass(formData: FormData) {
-  const redirectTo = readRedirectTarget(formData, "redirectTo", "/club");
-  const failureTo = readRedirectTarget(formData, "failureTo", "/auth/login");
-  const displayName = readFormString(formData, "displayName").trim();
-  const city = readFormString(formData, "city").trim();
-
-  if (displayName.length < 2) {
-    redirect(`${failureTo}?error=guest-pass`);
-  }
-
-  await signIn("guest-pass", {
-    city,
-    displayName,
-    redirectTo,
-  });
-}
-
-export async function signInWithDiscord(formData?: FormData) {
-  const redirectTo = formData
-    ? readRedirectTarget(formData, "redirectTo", "/club")
-    : "/club";
-  const failureTo = formData
-    ? readRedirectTarget(formData, "failureTo", "/auth/login")
-    : "/auth/login";
-
-  if (!env.AUTH_DISCORD_ID || !env.AUTH_DISCORD_SECRET) {
-    redirect(`${failureTo}?error=discord-unavailable`);
-  }
-
-  await signIn("discord", { redirectTo });
 }
 
 export async function requestPasswordResetAction(formData: FormData) {

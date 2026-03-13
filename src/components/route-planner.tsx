@@ -98,8 +98,7 @@ export function RoutePlanner({
           </p>
           <CardTitle>Tune the route before you scan it.</CardTitle>
           <CardDescription>
-            Keep the control surface tight, then let the recommendation stack do
-            the sorting.
+            Filter by city, style, pace, and number of stops.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -278,7 +277,7 @@ export function RoutePlanner({
                     </form>
                   ) : (
                     <span className="text-sm font-medium text-black/55">
-                      Sign in through Club to save route ideas.
+                      Sign in to save routes.
                     </span>
                   )}
                 </div>

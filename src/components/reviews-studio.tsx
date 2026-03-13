@@ -88,12 +88,10 @@ export function ReviewsStudio({
               Review studio
             </p>
             <CardTitle className="mt-1 text-3xl">
-              Add precise tasting notes instead of empty scores.
+              Write a useful review.
             </CardTitle>
             <CardDescription>
-              Great beer communities are built on useful signal. Leave notes
-              that explain balance, finish, and whether a pour is
-              destination-worthy.
+              Share short, specific notes that help someone else choose.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -181,7 +179,7 @@ export function ReviewsStudio({
                   <Textarea
                     name="body"
                     rows={5}
-                    placeholder="Describe structure, finish, and whether this beer deserves route priority."
+                    placeholder="What stood out? Flavor, balance, finish, or anything worth knowing."
                   />
                 </label>
                 <PendingButton
@@ -197,9 +195,7 @@ export function ReviewsStudio({
         ) : (
           <Card className="bg-white/75">
             <CardContent className="p-5 text-sm leading-7 text-black/68">
-              Save a guest pass in Club before publishing reviews. That keeps
-              tasting notes attached to a member profile instead of floating as
-              anonymous drive-by ratings.
+              Sign in to publish a review.
             </CardContent>
           </Card>
         )}

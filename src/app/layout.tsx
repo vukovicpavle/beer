@@ -9,7 +9,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 export const metadata: Metadata = {
   title: "Hop Atlas",
   description:
-    "A T3 beer platform for discovering standout pours, plotting routes, and collecting trusted reviews.",
+    "A beer app for discovering standout pours, planning routes, and keeping useful reviews.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -40,8 +40,7 @@ export default function RootLayout({
                   regulars.
                 </p>
                 <p>
-                  App Router, tRPC, Prisma, Tailwind, NextAuth, and strong DX
-                  defaults.
+                  Find breweries, plan stops, and keep track of what you liked.
                 </p>
               </div>
             </footer>

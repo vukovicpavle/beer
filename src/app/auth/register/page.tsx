@@ -40,8 +40,8 @@ export default async function RegisterPage({
   return (
     <AuthShell
       eyebrow="Register"
-      title="Create a permanent Hop Atlas account"
-      description="Permanent accounts give you email sign-in, password recovery, and a clean path into admin access when your role allows it."
+      title="Create your account"
+      description="Create an account to save routes and write reviews."
       helper={
         <Button asChild variant="ghost" size="sm">
           <Link
@@ -63,8 +63,8 @@ export default async function RegisterPage({
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <input type="hidden" name="failureTo" value="/auth/register" />
           <label className="grid gap-2 text-sm font-medium text-black/72">
-            Display name
-            <Input name="displayName" placeholder="Pavle Hop Atlas" />
+            Name
+            <Input name="displayName" placeholder="Your name" />
           </label>
           <label className="grid gap-2 text-sm font-medium text-black/72">
             Email
@@ -79,8 +79,8 @@ export default async function RegisterPage({
             />
           </label>
           <label className="grid gap-2 text-sm font-medium text-black/72">
-            Home city
-            <Input name="city" placeholder="Belgrade, Munich, Portland" />
+            City
+            <Input name="city" placeholder="Belgrade" />
           </label>
           <PendingButton
             pendingLabel="Creating account..."
