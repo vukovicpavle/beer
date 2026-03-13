@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Button } from "~/components/ui/button";
 import { auth } from "~/server/auth";
-import { getMemberSnapshot } from "~/server/services/member";
+import { api } from "~/trpc/server";
 
 const errorCopy: Record<string, string> = {
   "admin-only":
@@ -20,9 +20,7 @@ export default async function ClubPage({
   const errorMessage =
     typeof errorCode === "string" ? errorCopy[errorCode] : undefined;
   const session = await auth();
-  const member = session?.user?.id
-    ? await getMemberSnapshot(session.user.id)
-    : null;
+  const member = session?.user ? await api.member.me() : null;
 
   return (
     <main className="px-6 pt-6 pb-20 md:pt-10 md:pb-24">

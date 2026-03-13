@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { journalPosts } from "~/data/journal";
-import { getCatalogSnapshot } from "~/server/services/catalog";
+import { api } from "~/trpc/server";
 
 const featureCards = [
   {
@@ -60,7 +60,7 @@ const featureCards = [
 ] as const;
 
 export default async function Home() {
-  const { beers, breweries, reviews, routes } = await getCatalogSnapshot();
+  const { beers, breweries, reviews, routes } = await api.catalog.snapshot();
   const featuredBeers = beers.filter((beer) => beer.featured).slice(0, 3);
 
   return (

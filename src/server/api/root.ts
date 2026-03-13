@@ -1,4 +1,6 @@
+import { catalogRouter } from "~/server/api/routers/catalog";
 import { breweryRouter } from "~/server/api/routers/brewery";
+import { memberRouter } from "~/server/api/routers/member";
 import { reviewRouter } from "~/server/api/routers/review";
 import { routeRouter } from "~/server/api/routers/route";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
@@ -10,6 +12,8 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   brewery: breweryRouter,
+  catalog: catalogRouter,
+  member: memberRouter,
   review: reviewRouter,
   route: routeRouter,
 });
