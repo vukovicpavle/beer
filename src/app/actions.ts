@@ -443,7 +443,7 @@ export async function saveRouteAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect("/routes?error=save-route");
+    redirect("/beer-hopping?error=save-route");
   }
 
   const route = await db.route.findUnique({
@@ -452,7 +452,7 @@ export async function saveRouteAction(formData: FormData) {
   });
 
   if (!route) {
-    redirect("/routes?error=missing-route");
+    redirect("/beer-hopping?error=missing-route");
   }
 
   await db.savedRoute.upsert({
