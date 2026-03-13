@@ -1,4 +1,5 @@
 import { BeerMap } from "~/components/beer-map";
+import { PageHero } from "~/components/page-hero";
 import { getCatalogSnapshot } from "~/server/services/catalog";
 
 export default async function MapPage() {
@@ -6,19 +7,16 @@ export default async function MapPage() {
 
   return (
     <main className="px-6 pt-6 pb-20 md:pt-10 md:pb-24">
-      <div className="mx-auto w-full max-w-6xl">
-        <div className="mb-8 max-w-3xl">
-          <p className="text-sm font-semibold tracking-[0.22em] text-[var(--color-hop)] uppercase">
-            Beer map
-          </p>
-          <h1 className="mt-3 font-[family-name:var(--font-display)] text-5xl text-[var(--color-cellar)]">
-            Scout standout breweries before you commit the night.
-          </h1>
-          <p className="mt-5 text-lg leading-8 text-black/68">
-            The map favors signal over volume: where it is, what it does best,
-            and whether it belongs in a casual crawl or a destination detour.
-          </p>
-        </div>
+      <div className="mx-auto grid w-full max-w-6xl gap-8">
+        <PageHero
+          eyebrow="Beer map"
+          title="Scout standout breweries before you commit the night."
+          description="The map now favors quicker scanning: fewer competing surfaces, clearer brewery signal, and a steadier transition from search to selection."
+          stats={[
+            { label: "Breweries", value: String(breweries.length) },
+            { label: "Routes", value: String(routes.length) },
+          ]}
+        />
         <BeerMap
           beers={beers}
           breweries={breweries}

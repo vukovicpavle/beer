@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { createReviewAction } from "~/app/actions";
 import type {
@@ -10,6 +10,17 @@ import type {
 } from "~/data/catalog";
 
 import { PendingButton } from "./pending-button";
+import { Badge } from "./ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Select } from "./ui/select";
+import { Textarea } from "./ui/textarea";
 
 type ReviewsStudioProps = {
   beers: BeerSummary[];
@@ -29,6 +40,8 @@ export function ReviewsStudio({
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedStyle, setSelectedStyle] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
+  const deferredCity = useDeferredValue(selectedCity);
+  const deferredStyle = useDeferredValue(selectedStyle);
 
   const cityOptions = Array.from(
     new Set(breweries.map((brewery) => brewery.city)),
@@ -42,11 +55,11 @@ export function ReviewsStudio({
         (entry) => entry.slug === beer?.brewerySlug,
       );
 
-      if (selectedStyle !== "all" && beer?.style !== selectedStyle) {
+      if (deferredStyle !== "all" && beer?.style !== deferredStyle) {
         return false;
       }
 
-      if (selectedCity !== "all" && brewery?.city !== selectedCity) {
+      if (deferredCity !== "all" && brewery?.city !== deferredCity) {
         return false;
       }
 
@@ -68,112 +81,136 @@ export function ReviewsStudio({
 
   return (
     <div className="grid gap-8">
-      <section className="grid gap-4 rounded-[2rem] border border-black/10 bg-[var(--panel)] p-6 md:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <p className="text-sm font-semibold tracking-[0.18em] text-[var(--color-hop)] uppercase">
-            Review studio
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold text-[var(--color-cellar)]">
-            Add precise tasting notes instead of empty scores.
-          </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-black/68">
-            Great beer communities are built on useful signal. Leave notes that
-            explain balance, finish, and whether a pour is destination-worthy.
-          </p>
-        </div>
-        {canWrite ? (
-          <form
-            action={createReviewAction}
-            className="grid gap-3 rounded-[1.5rem] bg-white/75 p-5"
-          >
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-medium text-black/72">
-                Beer
-                <select
-                  name="beerSlug"
-                  defaultValue={beers[0]?.slug}
-                  className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-                >
-                  {beers.map((beer) => (
-                    <option key={beer.slug} value={beer.slug}>
-                      {beer.name} • {beer.style}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="grid gap-2 text-sm font-medium text-black/72">
-                Rating
-                <select
-                  name="rating"
-                  defaultValue="4"
-                  className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-                >
-                  {[5, 4, 3, 2, 1].map((value) => (
-                    <option key={value} value={value}>
-                      {value}/5
-                    </option>
-                  ))}
-                </select>
-              </label>
+      <section className="grid gap-4 md:grid-cols-[0.9fr_1.1fr]">
+        <Card className="bg-[var(--panel)]">
+          <CardHeader>
+            <p className="text-sm font-semibold tracking-[0.18em] text-[var(--color-hop)] uppercase">
+              Review studio
+            </p>
+            <CardTitle className="mt-1 text-3xl">
+              Add precise tasting notes instead of empty scores.
+            </CardTitle>
+            <CardDescription>
+              Great beer communities are built on useful signal. Leave notes
+              that explain balance, finish, and whether a pour is
+              destination-worthy.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[1.25rem] bg-white/75 p-4">
+                <p className="text-xs font-semibold tracking-[0.16em] text-black/45 uppercase">
+                  Published
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-cellar)]">
+                  {reviews.length}
+                </p>
+              </div>
+              <div className="rounded-[1.25rem] bg-white/75 p-4">
+                <p className="text-xs font-semibold tracking-[0.16em] text-black/45 uppercase">
+                  Cities
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-cellar)]">
+                  {cityOptions.length}
+                </p>
+              </div>
+              <div className="rounded-[1.25rem] bg-white/75 p-4">
+                <p className="text-xs font-semibold tracking-[0.16em] text-black/45 uppercase">
+                  Styles
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-[var(--color-cellar)]">
+                  {styleOptions.length}
+                </p>
+              </div>
             </div>
-            <label className="grid gap-2 text-sm font-medium text-black/72">
-              Review title
-              <input
-                name="title"
-                placeholder="Balanced enough to order twice"
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-black/72">
-              Author label
-              <input
-                name="authorName"
-                defaultValue={defaultAuthorName ?? ""}
-                placeholder="How your review should appear"
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-black/72">
-              Visit date
-              <input
-                name="visitedAt"
-                type="date"
-                className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-            </label>
-            <label className="grid gap-2 text-sm font-medium text-black/72">
-              Tasting note
-              <textarea
-                name="body"
-                rows={5}
-                placeholder="Describe structure, finish, and whether this beer deserves route priority."
-                className="rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 outline-none"
-              />
-            </label>
-            <PendingButton
-              pendingLabel="Publishing review..."
-              className="inline-flex rounded-full bg-[var(--color-cellar)] px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
-              type="submit"
-            >
-              Publish review
-            </PendingButton>
-          </form>
+          </CardContent>
+        </Card>
+        {canWrite ? (
+          <Card className="bg-white/75">
+            <CardHeader>
+              <CardTitle className="text-2xl">Write a review</CardTitle>
+              <CardDescription>
+                Keep it short, specific, and useful to someone planning a pour.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form action={createReviewAction} className="grid gap-3">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="grid gap-2 text-sm font-medium text-black/72">
+                    Beer
+                    <Select name="beerSlug" defaultValue={beers[0]?.slug}>
+                      {beers.map((beer) => (
+                        <option key={beer.slug} value={beer.slug}>
+                          {beer.name} • {beer.style}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                  <label className="grid gap-2 text-sm font-medium text-black/72">
+                    Rating
+                    <Select name="rating" defaultValue="4">
+                      {[5, 4, 3, 2, 1].map((value) => (
+                        <option key={value} value={value}>
+                          {value}/5
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                </div>
+                <label className="grid gap-2 text-sm font-medium text-black/72">
+                  Review title
+                  <Input
+                    name="title"
+                    placeholder="Balanced enough to order twice"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-black/72">
+                  Author label
+                  <Input
+                    name="authorName"
+                    defaultValue={defaultAuthorName ?? ""}
+                    placeholder="How your review should appear"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-black/72">
+                  Visit date
+                  <Input name="visitedAt" type="date" />
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-black/72">
+                  Tasting note
+                  <Textarea
+                    name="body"
+                    rows={5}
+                    placeholder="Describe structure, finish, and whether this beer deserves route priority."
+                  />
+                </label>
+                <PendingButton
+                  pendingLabel="Publishing review..."
+                  className="inline-flex rounded-full bg-[var(--color-cellar)] px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
+                  type="submit"
+                >
+                  Publish review
+                </PendingButton>
+              </form>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="rounded-[1.5rem] bg-white/75 p-5 text-sm leading-7 text-black/68">
-            Save a guest pass in Club before publishing reviews. That keeps
-            tasting notes attached to a member profile instead of floating as
-            anonymous drive-by ratings.
-          </div>
+          <Card className="bg-white/75">
+            <CardContent className="p-5 text-sm leading-7 text-black/68">
+              Save a guest pass in Club before publishing reviews. That keeps
+              tasting notes attached to a member profile instead of floating as
+              anonymous drive-by ratings.
+            </CardContent>
+          </Card>
         )}
       </section>
 
       <section className="grid gap-4 rounded-[2rem] border border-black/10 bg-white/60 p-6 md:grid-cols-[repeat(3,minmax(0,1fr))]">
         <label className="grid gap-2 text-sm font-medium text-black/72">
           City
-          <select
+          <Select
             value={selectedCity}
             onChange={(event) => setSelectedCity(event.target.value)}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
           >
             <option value="all">All cities</option>
             {cityOptions.map((city) => (
@@ -181,14 +218,13 @@ export function ReviewsStudio({
                 {city}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="grid gap-2 text-sm font-medium text-black/72">
           Style
-          <select
+          <Select
             value={selectedStyle}
             onChange={(event) => setSelectedStyle(event.target.value)}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
           >
             <option value="all">All styles</option>
             {styleOptions.map((style) => (
@@ -196,18 +232,17 @@ export function ReviewsStudio({
                 {style}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="grid gap-2 text-sm font-medium text-black/72">
           Sort
-          <select
+          <Select
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value)}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
           >
             <option value="newest">Newest</option>
             <option value="highest">Highest rated</option>
-          </select>
+          </Select>
         </label>
       </section>
 
@@ -219,38 +254,37 @@ export function ReviewsStudio({
           );
 
           return (
-            <article
-              key={review.id}
-              className="rounded-[1.75rem] border border-black/10 bg-white/70 p-6"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold tracking-[0.18em] text-[var(--color-malt)] uppercase">
-                    {beer?.style ?? "Featured pour"}
-                  </p>
-                  <h3 className="mt-2 text-2xl font-semibold text-[var(--color-cellar)]">
-                    {review.title}
-                  </h3>
+            <Card key={review.id}>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Badge className="w-fit">
+                      {beer?.style ?? "Featured pour"}
+                    </Badge>
+                    <h3 className="mt-3 text-2xl font-semibold text-[var(--color-cellar)]">
+                      {review.title}
+                    </h3>
+                  </div>
+                  <span className="rounded-full bg-[var(--color-paper-strong)] px-3 py-1 text-sm font-semibold text-[var(--color-malt-dark)]">
+                    {review.rating}/5
+                  </span>
                 </div>
-                <span className="rounded-full bg-[var(--color-paper-strong)] px-3 py-1 text-sm font-semibold text-[var(--color-malt-dark)]">
-                  {review.rating}/5
-                </span>
-              </div>
-              <p className="mt-3 text-sm font-medium text-black/55">
-                {beer?.name} {brewery ? `• ${brewery.name}` : ""}
-              </p>
-              <p className="mt-4 text-sm leading-7 text-black/70">
-                {review.body}
-              </p>
-              <div className="mt-6 flex items-center justify-between text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
-                <span>{review.authorName}</span>
-                <span>
-                  {new Date(
-                    review.createdAt ?? review.visitedAt ?? Date.now(),
-                  ).toLocaleDateString()}
-                </span>
-              </div>
-            </article>
+                <p className="mt-3 text-sm font-medium text-black/55">
+                  {beer?.name} {brewery ? `• ${brewery.name}` : ""}
+                </p>
+                <p className="mt-4 text-sm leading-7 text-black/70">
+                  {review.body}
+                </p>
+                <div className="mt-6 flex items-center justify-between text-xs font-semibold tracking-[0.18em] text-black/45 uppercase">
+                  <span>{review.authorName}</span>
+                  <span>
+                    {new Date(
+                      review.createdAt ?? review.visitedAt ?? Date.now(),
+                    ).toLocaleDateString()}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
           );
         })}
       </div>

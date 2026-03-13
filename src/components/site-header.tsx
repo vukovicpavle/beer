@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { signOutAction } from "~/app/actions";
-import { auth } from "~/server/auth";
-
-import { PendingButton } from "./pending-button";
+import { HeaderAuthControls } from "./header-auth-controls";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 const navItems = [
   { href: "/club", label: "Club" },
@@ -13,76 +14,59 @@ const navItems = [
   { href: "/journal", label: "Journal" },
 ] as const;
 
-export async function SiteHeader() {
-  const session = await auth();
-  const memberLabel = session?.user?.name?.split(" ")[0] ?? "Member";
-  const isAdmin = session?.user?.role === "ADMIN";
-
+export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 px-6 py-5 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between rounded-full border border-black/10 bg-[var(--panel)] px-5 py-3 shadow-[0_8px_40px_rgba(61,31,10,0.08)]">
-        <Link
-          href="/"
-          className="flex items-center gap-3 text-[var(--color-cellar)]"
-        >
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-cellar)] text-sm font-bold text-[var(--color-foam)]">
-            HA
-          </span>
-          <span>
-            <span className="block text-xs font-semibold tracking-[0.22em] text-black/45 uppercase">
-              Hop Atlas
+    <header className="sticky top-0 z-50 px-4 py-4 backdrop-blur-xl md:px-6 md:py-5">
+      <div className="mx-auto grid w-full max-w-6xl gap-3 rounded-[2rem] border border-black/10 bg-[var(--panel)] px-4 py-4 shadow-[0_8px_40px_rgba(61,31,10,0.08)] md:px-5">
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="flex min-w-0 items-center gap-3 text-[var(--color-cellar)]"
+          >
+            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--color-cellar)] text-sm font-bold text-[var(--color-foam)]">
+              HA
             </span>
-            <span className="block text-base font-semibold">
-              Beer discovery for people with taste
+            <span className="min-w-0">
+              <span className="block text-xs font-semibold tracking-[0.22em] text-black/45 uppercase">
+                Hop Atlas
+              </span>
+              <span className="block truncate text-sm font-semibold md:text-base">
+                Beer discovery for people with taste
+              </span>
             </span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <nav className="hidden items-center gap-6 md:flex">
+          </Link>
+          <Suspense fallback={<Skeleton className="h-10 w-28 rounded-full" />}>
+            <HeaderAuthControls />
+          </Suspense>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 md:justify-between md:pb-0">
+          <div className="hidden md:flex md:items-center md:gap-2">
+            <Badge variant="muted">Fast routes</Badge>
+            <Badge variant="muted">Quiet UI</Badge>
+            <Badge variant="muted">Useful reviews</Badge>
+          </div>
+          <nav className="flex flex-nowrap items-center gap-2">
             {navItems.map((item) => (
-              <Link
+              <Button
                 key={item.href}
-                href={item.href}
-                className="text-sm font-semibold text-black/65 transition hover:text-[var(--color-cellar)]"
+                asChild
+                size="sm"
+                variant="ghost"
+                className="px-3 whitespace-nowrap"
               >
-                {item.label}
-              </Link>
+                <Link href={item.href}>{item.label}</Link>
+              </Button>
             ))}
-            {isAdmin ? (
-              <Link
-                href="/admin"
-                className="text-sm font-semibold text-[var(--color-hop)] transition hover:text-[var(--color-cellar)]"
-              >
-                Admin
-              </Link>
-            ) : null}
-          </nav>
-          {session?.user ? (
-            <>
-              <Link
-                href={isAdmin ? "/admin" : "/club"}
-                className="hidden rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--color-cellar)] transition hover:bg-white md:inline-flex"
-              >
-                {isAdmin ? `${memberLabel} • Admin` : memberLabel}
-              </Link>
-              <form action={signOutAction}>
-                <PendingButton
-                  pendingLabel="Signing out..."
-                  className="inline-flex rounded-full bg-[var(--color-cellar)] px-4 py-2 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
-                  type="submit"
-                >
-                  Sign out
-                </PendingButton>
-              </form>
-            </>
-          ) : (
-            <Link
-              href="/club"
-              className="inline-flex rounded-full bg-[var(--color-cellar)] px-4 py-2 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
+            <Button
+              asChild
+              size="sm"
+              variant="secondary"
+              className="px-3 whitespace-nowrap"
             >
-              Join the club
-            </Link>
-          )}
+              <Link href="/admin">Admin</Link>
+            </Button>
+          </nav>
         </div>
       </div>
     </header>

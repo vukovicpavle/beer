@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import Map, {
   Marker,
   NavigationControl,
@@ -15,6 +15,17 @@ import type {
   RouteSummary,
 } from "~/data/catalog";
 
+import { Badge } from "./ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Input } from "./ui/input";
+import { Select } from "./ui/select";
+
 type BeerMapProps = {
   beers: BeerSummary[];
   breweries: BrewerySummary[];
@@ -27,6 +38,7 @@ const defaultCenter = { latitude: 50.1109, longitude: 10.6821, zoom: 3.4 };
 export function BeerMap({ beers, breweries, reviews, routes }: BeerMapProps) {
   const mapRef = useRef<MapRef | null>(null);
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(
     breweries[0]?.slug ?? null,
@@ -41,10 +53,10 @@ export function BeerMap({ beers, breweries, reviews, routes }: BeerMapProps) {
   ).sort();
   const visibleBreweries = breweries.filter((brewery) => {
     const matchesQuery =
-      query.length === 0 ||
+      deferredQuery.length === 0 ||
       `${brewery.name} ${brewery.city} ${brewery.specialty} ${brewery.tags.join(" ")}`
         .toLowerCase()
-        .includes(query.toLowerCase());
+        .includes(deferredQuery.toLowerCase());
     const matchesCity = selectedCity === "all" || brewery.city === selectedCity;
     const matchesStyle =
       selectedStyle === "all" ||
@@ -99,47 +111,46 @@ export function BeerMap({ beers, breweries, reviews, routes }: BeerMapProps) {
   return (
     <div className="grid gap-5 lg:grid-cols-[1.22fr_0.78fr]">
       <div className="grid gap-5">
-        <div className="grid gap-4 rounded-[1.75rem] border border-black/10 bg-[var(--panel)] p-5 md:grid-cols-[1.3fr_repeat(2,minmax(0,1fr))]">
-          <label className="grid gap-2 text-sm font-medium text-black/72">
-            Search breweries
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by brewery, city, or specialty"
-              className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-            />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-black/72">
-            City
-            <select
-              value={selectedCity}
-              onChange={(event) => setSelectedCity(event.target.value)}
-              className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-            >
-              <option value="all">All cities</option>
-              {cityOptions.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-black/72">
-            Beer style
-            <select
-              value={selectedStyle}
-              onChange={(event) => setSelectedStyle(event.target.value)}
-              className="rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none"
-            >
-              <option value="all">All styles</option>
-              {styleOptions.map((style) => (
-                <option key={style} value={style}>
-                  {style}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <Card className="bg-[var(--panel)]">
+          <CardContent className="grid gap-4 p-5 md:grid-cols-[1.3fr_repeat(2,minmax(0,1fr))]">
+            <label className="grid gap-2 text-sm font-medium text-black/72">
+              Search breweries
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search by brewery, city, or specialty"
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-medium text-black/72">
+              City
+              <Select
+                value={selectedCity}
+                onChange={(event) => setSelectedCity(event.target.value)}
+              >
+                <option value="all">All cities</option>
+                {cityOptions.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <label className="grid gap-2 text-sm font-medium text-black/72">
+              Beer style
+              <Select
+                value={selectedStyle}
+                onChange={(event) => setSelectedStyle(event.target.value)}
+              >
+                <option value="all">All styles</option>
+                {styleOptions.map((style) => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          </CardContent>
+        </Card>
 
         <div className="overflow-hidden rounded-[1.75rem] border border-black/10 bg-white/50 shadow-[0_12px_50px_rgba(61,31,10,0.08)]">
           <Map
@@ -200,80 +211,83 @@ export function BeerMap({ beers, breweries, reviews, routes }: BeerMapProps) {
 
       <div className="grid gap-4">
         {selected ? (
-          <article className="rounded-[1.75rem] border border-black/10 bg-[var(--color-cellar)] p-6 text-[var(--color-foam)]">
-            <p className="text-xs font-semibold tracking-[0.18em] text-white/60 uppercase">
-              {selected.city} • {selected.country}
-            </p>
-            <h3 className="mt-3 text-3xl font-semibold">{selected.name}</h3>
-            <p className="mt-4 text-sm leading-7 text-white/78">
-              {selected.description}
-            </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[1.25rem] bg-white/10 p-4">
-                <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
-                  Specialty
-                </p>
-                <p className="mt-2 text-sm font-semibold">
-                  {selected.specialty}
-                </p>
-              </div>
-              <div className="rounded-[1.25rem] bg-white/10 p-4">
-                <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
-                  Signal
-                </p>
-                <p className="mt-2 text-sm font-semibold">
-                  {averageRating
-                    ? `${averageRating.toFixed(1)}/5 avg from ${selectedReviews.length} reviews`
-                    : "Fresh scouting stop"}
-                </p>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {selected.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-white/75 uppercase"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="mt-6 grid gap-3">
-              {selectedBeers.slice(0, 3).map((beer) => (
-                <div
-                  key={beer.slug}
-                  className="rounded-[1.25rem] bg-white/8 p-4"
-                >
+          <Card className="bg-[var(--color-cellar)] text-[var(--color-foam)]">
+            <CardHeader>
+              <p className="text-xs font-semibold tracking-[0.18em] text-white/60 uppercase">
+                {selected.city} • {selected.country}
+              </p>
+              <CardTitle className="mt-1 text-3xl text-[var(--color-foam)]">
+                {selected.name}
+              </CardTitle>
+              <CardDescription className="text-white/78">
+                {selected.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[1.25rem] bg-white/10 p-4">
                   <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
-                    {beer.style}
+                    Specialty
                   </p>
-                  <p className="mt-2 text-lg font-semibold">{beer.name}</p>
-                  <p className="mt-2 text-sm text-white/72">
-                    {beer.description}
+                  <p className="mt-2 text-sm font-semibold">
+                    {selected.specialty}
                   </p>
                 </div>
-              ))}
-            </div>
-            {selectedRoutes.length > 0 ? (
-              <div className="mt-6">
-                <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
-                  Shows up in routes
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {selectedRoutes.map((route) => (
-                    <span
-                      key={route.slug}
-                      className="rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-white/78"
-                    >
-                      {route.name}
-                    </span>
-                  ))}
+                <div className="rounded-[1.25rem] bg-white/10 p-4">
+                  <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
+                    Signal
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">
+                    {averageRating
+                      ? `${averageRating.toFixed(1)}/5 avg from ${selectedReviews.length} reviews`
+                      : "Fresh scouting stop"}
+                  </p>
                 </div>
               </div>
-            ) : null}
-          </article>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {selected.tags.map((tag) => (
+                  <Badge key={tag} variant="inverse">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <div className="mt-6 grid gap-3">
+                {selectedBeers.slice(0, 2).map((beer) => (
+                  <div
+                    key={beer.slug}
+                    className="rounded-[1.25rem] bg-white/8 p-4"
+                  >
+                    <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
+                      {beer.style}
+                    </p>
+                    <p className="mt-2 text-lg font-semibold">{beer.name}</p>
+                    <p className="mt-2 text-sm text-white/72">
+                      {beer.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {selectedRoutes.length > 0 ? (
+                <div className="mt-6">
+                  <p className="text-xs font-semibold tracking-[0.16em] text-white/55 uppercase">
+                    Shows up in routes
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedRoutes.map((route) => (
+                      <span
+                        key={route.slug}
+                        className="rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-white/78"
+                      >
+                        {route.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
         ) : null}
-        <div className="grid gap-4">
+        <div className="grid max-h-[34rem] gap-4 overflow-y-auto pr-1">
           {visibleBreweries.map((brewery) => (
             <button
               key={brewery.slug}

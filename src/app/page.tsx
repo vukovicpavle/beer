@@ -8,6 +8,16 @@ import {
   Star,
 } from "lucide-react";
 
+import { PageHero } from "~/components/page-hero";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { journalPosts } from "~/data/journal";
 import { getCatalogSnapshot } from "~/server/services/catalog";
 
@@ -57,81 +67,48 @@ export default async function Home() {
     <main>
       <section className="px-6 pt-8 pb-14 md:pt-12 md:pb-20">
         <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[2rem] border border-black/10 bg-[var(--panel)] p-8 shadow-[0_18px_80px_rgba(61,31,10,0.10)] backdrop-blur md:p-12">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--color-malt)]/20 bg-white/40 px-4 py-2 text-sm font-medium text-[var(--color-malt-dark)]">
-              Built on the T3 stack, shaped for beer discovery
-            </div>
-            <h1 className="max-w-3xl font-[family-name:var(--font-display)] text-5xl leading-none text-[var(--color-cellar)] md:text-7xl">
-              A serious beer app for planning better pours.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-black/70 md:text-xl">
-              Hop Atlas combines a discovery map, concise tasting reviews,
-              editorial storytelling, and a route planner so beer lovers can
-              move from inspiration to an actual night out.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href="/map"
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--color-cellar)] px-6 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
-              >
-                Explore the map
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/routes"
-                className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/50 px-6 py-3 text-sm font-semibold text-[var(--color-cellar)] transition hover:bg-white"
-              >
-                Build a tasting route
-              </Link>
-            </div>
-            <dl className="mt-10 grid gap-4 border-t border-black/10 pt-8 sm:grid-cols-3">
-              <div>
-                <dt className="text-sm tracking-[0.18em] text-black/45 uppercase">
-                  Featured beers
-                </dt>
-                <dd className="mt-2 text-3xl font-semibold text-[var(--color-cellar)]">
-                  {beers.length}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm tracking-[0.18em] text-black/45 uppercase">
-                  Map stops
-                </dt>
-                <dd className="mt-2 text-3xl font-semibold text-[var(--color-cellar)]">
-                  {breweries.length}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm tracking-[0.18em] text-black/45 uppercase">
-                  Curated routes
-                </dt>
-                <dd className="mt-2 text-3xl font-semibold text-[var(--color-cellar)]">
-                  {routes.length}
-                </dd>
-              </div>
-            </dl>
-          </div>
+          <PageHero
+            eyebrow="Built on the T3 stack, shaped for beer discovery"
+            title="A serious beer app for planning better pours."
+            description="Hop Atlas combines a discovery map, concise tasting reviews, editorial storytelling, and a route planner so beer lovers can move from inspiration to an actual night out."
+            stats={[
+              { label: "Featured beers", value: String(beers.length) },
+              { label: "Map stops", value: String(breweries.length) },
+              { label: "Routes", value: String(routes.length) },
+              { label: "Reviews", value: String(reviews.length) },
+            ]}
+          />
 
           <div className="grid gap-4">
             {featuredBeers.map((beer, index) => (
-              <article
-                key={beer.slug}
-                className="rounded-[1.75rem] border border-black/10 bg-[var(--panel-strong)] p-6 shadow-[0_16px_50px_rgba(63,44,17,0.08)]"
-              >
-                <p className="text-xs font-semibold tracking-[0.22em] text-[var(--color-malt)] uppercase">
-                  Pour {index + 1}
-                </p>
-                <h2 className="mt-3 font-[family-name:var(--font-display)] text-3xl text-[var(--color-cellar)]">
-                  {beer.name}
-                </h2>
-                <p className="mt-2 text-sm font-medium text-black/55">
-                  {beer.style} • {beer.abv.toFixed(1)}% ABV
-                </p>
-                <p className="mt-4 text-sm leading-7 text-black/70">
-                  {beer.description}
-                </p>
-              </article>
+              <Card key={beer.slug} className="bg-[var(--panel-strong)]">
+                <CardHeader>
+                  <Badge className="w-fit">Pour {index + 1}</Badge>
+                  <CardTitle className="mt-1 font-[family-name:var(--font-display)] text-3xl">
+                    {beer.name}
+                  </CardTitle>
+                  <CardDescription>
+                    {beer.style} • {beer.abv.toFixed(1)}% ABV
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-7 text-black/70">
+                    {beer.description}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
+            <div className="flex flex-wrap gap-3 px-2">
+              <Button asChild>
+                <Link href="/map">
+                  Explore the map
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/routes">Build a tasting route</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -150,25 +127,27 @@ export default async function Home() {
           </div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {featureCards.map(({ href, title, description, icon: Icon }) => (
-              <Link
+              <Card
                 key={title}
-                href={href}
-                className="group rounded-[1.75rem] border border-black/10 bg-white/50 p-6 transition hover:-translate-y-1 hover:bg-white/80"
+                className="group bg-white/50 transition hover:-translate-y-1 hover:bg-white/80"
               >
-                <div className="inline-flex rounded-2xl bg-[var(--color-cellar)] p-3 text-[var(--color-foam)]">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-5 text-2xl font-semibold text-[var(--color-cellar)]">
-                  {title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-black/65">
-                  {description}
-                </p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-malt-dark)]">
-                  Open feature
-                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
-                </span>
-              </Link>
+                <CardHeader>
+                  <div className="inline-flex rounded-2xl bg-[var(--color-cellar)] p-3 text-[var(--color-foam)]">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <CardTitle className="mt-3 text-2xl">{title}</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    href={href}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-malt-dark)]"
+                  >
+                    Open feature
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </Link>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
@@ -231,13 +210,12 @@ export default async function Home() {
             </p>
           </div>
           <div className="grid gap-4 md:justify-self-end">
-            <Link
-              href="/club"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--color-cellar)] px-6 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-black"
-            >
-              Open Club
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <Button asChild>
+              <Link href="/club">
+                Open Club
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
             <p className="max-w-md text-sm leading-7 text-black/60">
               Guest membership is active now. Discord can be layered on top when
               you want a richer identity flow in production.
