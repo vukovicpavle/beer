@@ -114,7 +114,7 @@ export default async function ClubPage({
                     </p>
                   </div>
                   <Link
-                    href={`/routes#${member.nextRoute.slug}`}
+                    href={`/beer-hopping#${member.nextRoute.slug}`}
                     className="inline-flex rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-[var(--color-foam)] transition hover:bg-white/20"
                   >
                     Open recommendation
@@ -135,7 +135,7 @@ export default async function ClubPage({
                     </h2>
                   </div>
                   <Link
-                    href="/routes"
+                    href="/beer-hopping"
                     className="text-sm font-semibold text-[var(--color-malt-dark)]"
                   >
                     Open planner

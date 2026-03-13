@@ -703,7 +703,7 @@ export function AdminWorkbench({
 
       <div className="flex justify-end">
         <Button asChild variant="outline">
-          <Link href="/club">Back to club</Link>
+          <Link href="/club">Back to account</Link>
         </Button>
       </div>
     </div>

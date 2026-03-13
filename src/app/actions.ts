@@ -220,9 +220,9 @@ function revalidateAdminSurfaces() {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/club");
-  revalidatePath("/map");
+  revalidatePath("/beer-hopping");
   revalidatePath("/reviews");
-  revalidatePath("/routes");
+  revalidatePath("/blog");
 }
 
 async function assertAdminMutationAllowed(
@@ -471,7 +471,7 @@ export async function saveRouteAction(formData: FormData) {
   });
 
   revalidatePath("/club");
-  revalidatePath("/routes");
+  revalidatePath("/beer-hopping");
 }
 
 export async function createReviewAction(formData: FormData) {
