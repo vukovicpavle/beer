@@ -135,6 +135,50 @@ const userRoleSchema = z.object({
   userId: z.string().trim().min(1),
 });
 
+const breweryUpdateSchema = breweryCreateSchema.extend({
+  breweryId: z.string().trim().min(1),
+});
+
+const beerUpdateSchema = beerCreateSchema.extend({
+  beerId: z.string().trim().min(1),
+});
+
+const routeUpdateSchema = routeCreateSchema.extend({
+  routeId: z.string().trim().min(1),
+});
+
+const reviewUpdateSchema = z.object({
+  authorName: z.string().trim().min(2).max(60),
+  body: z.string().trim().min(24).max(600),
+  published: z.enum(["true", "false"]),
+  rating: z.coerce.number().int().min(1).max(5),
+  reviewId: z.string().trim().min(1),
+  title: z.string().trim().min(3).max(80),
+  visitedAt: z
+    .string()
+    .trim()
+    .transform((value) => value || undefined),
+});
+
+const userUpdateSchema = z.object({
+  city: z
+    .string()
+    .trim()
+    .max(40)
+    .transform((value) => value || undefined),
+  name: z
+    .string()
+    .trim()
+    .max(60)
+    .transform((value) => value || undefined),
+  role: z.nativeEnum(UserRole),
+  userId: z.string().trim().min(1),
+});
+
+const deleteEntitySchema = z.object({
+  id: z.string().trim().min(1),
+});
+
 function readFormString(formData: FormData, key: string) {
   const value = formData.get(key);
 
@@ -149,6 +193,39 @@ async function requireAdminSession() {
   }
 
   return session;
+}
+
+function revalidateAdminSurfaces() {
+  revalidatePath("/");
+  revalidatePath("/admin");
+  revalidatePath("/club");
+  revalidatePath("/map");
+  revalidatePath("/reviews");
+  revalidatePath("/routes");
+}
+
+async function assertAdminMutationAllowed(
+  sessionUserId: string,
+  targetUserId: string,
+) {
+  if (sessionUserId === targetUserId) {
+    redirect("/admin?error=self-demote");
+  }
+
+  const target = await db.user.findUnique({
+    where: { id: targetUserId },
+    select: { role: true },
+  });
+
+  if (target?.role === UserRole.ADMIN) {
+    const adminCount = await db.user.count({
+      where: { role: UserRole.ADMIN },
+    });
+
+    if (adminCount <= 1) {
+      redirect("/admin?error=last-admin");
+    }
+  }
 }
 
 export async function signUpWithEmailPassword(formData: FormData) {
@@ -389,9 +466,7 @@ export async function createBreweryAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
-  revalidatePath("/admin");
-  revalidatePath("/map");
+  revalidateAdminSurfaces();
 }
 
 export async function createBeerAction(formData: FormData) {
@@ -401,7 +476,7 @@ export async function createBeerAction(formData: FormData) {
     abv: formData.get("abv"),
     brewerySlug: formData.get("brewerySlug"),
     description: formData.get("description"),
-    featured: formData.get("featured"),
+    featured: readFormString(formData, "featured"),
     ibu: formData.get("ibu"),
     name: formData.get("name"),
     slug: formData.get("slug"),
@@ -434,9 +509,7 @@ export async function createBeerAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
-  revalidatePath("/admin");
-  revalidatePath("/reviews");
+  revalidateAdminSurfaces();
 }
 
 export async function createRouteAction(formData: FormData) {
@@ -490,10 +563,7 @@ export async function createRouteAction(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
-  revalidatePath("/admin");
-  revalidatePath("/map");
-  revalidatePath("/routes");
+  revalidateAdminSurfaces();
 }
 
 export async function toggleReviewVisibilityAction(formData: FormData) {
@@ -513,9 +583,7 @@ export async function toggleReviewVisibilityAction(formData: FormData) {
     data: { published: parsed.data.published === "true" },
   });
 
-  revalidatePath("/");
-  revalidatePath("/admin");
-  revalidatePath("/reviews");
+  revalidateAdminSurfaces();
 }
 
 export async function toggleBeerFeaturedAction(formData: FormData) {
@@ -535,9 +603,7 @@ export async function toggleBeerFeaturedAction(formData: FormData) {
     data: { featured: parsed.data.featured === "true" },
   });
 
-  revalidatePath("/");
-  revalidatePath("/admin");
-  revalidatePath("/reviews");
+  revalidateAdminSurfaces();
 }
 
 export async function updateUserRoleAction(formData: FormData) {
@@ -558,10 +624,294 @@ export async function updateUserRoleAction(formData: FormData) {
     redirect("/admin?error=self-demote");
   }
 
+  if (parsed.data.role !== UserRole.ADMIN) {
+    await assertAdminMutationAllowed(session.user.id, parsed.data.userId);
+  }
+
   await db.user.update({
     where: { id: parsed.data.userId },
     data: { role: parsed.data.role },
   });
 
   revalidatePath("/admin");
+}
+
+export async function updateBreweryAction(formData: FormData) {
+  await requireAdminSession();
+
+  const parsed = breweryUpdateSchema.safeParse({
+    breweryId: formData.get("breweryId"),
+    city: formData.get("city"),
+    country: formData.get("country"),
+    description: formData.get("description"),
+    heroBeer: formData.get("heroBeer"),
+    latitude: formData.get("latitude"),
+    longitude: formData.get("longitude"),
+    name: formData.get("name"),
+    slug: formData.get("slug"),
+    specialty: formData.get("specialty"),
+    tags: formData.get("tags"),
+    website: formData.get("website"),
+  });
+
+  if (!parsed.success) {
+    redirect("/admin?error=brewery-invalid");
+  }
+
+  await db.brewery.update({
+    where: { id: parsed.data.breweryId },
+    data: {
+      city: parsed.data.city,
+      country: parsed.data.country,
+      description: parsed.data.description,
+      heroBeer: parsed.data.heroBeer,
+      latitude: parsed.data.latitude,
+      longitude: parsed.data.longitude,
+      name: parsed.data.name,
+      slug: parsed.data.slug,
+      specialty: parsed.data.specialty,
+      tags: parsed.data.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      website: parsed.data.website,
+    },
+  });
+
+  revalidateAdminSurfaces();
+}
+
+export async function deleteBreweryAction(formData: FormData) {
+  await requireAdminSession();
+  const parsed = deleteEntitySchema.safeParse({
+    id: formData.get("breweryId"),
+  });
+
+  if (!parsed.success) {
+    redirect("/admin?error=brewery-delete");
+  }
+
+  await db.brewery.delete({ where: { id: parsed.data.id } });
+  revalidateAdminSurfaces();
+}
+
+export async function updateBeerAction(formData: FormData) {
+  await requireAdminSession();
+
+  const parsed = beerUpdateSchema.safeParse({
+    abv: formData.get("abv"),
+    beerId: formData.get("beerId"),
+    brewerySlug: formData.get("brewerySlug"),
+    description: formData.get("description"),
+    featured: readFormString(formData, "featured"),
+    ibu: formData.get("ibu"),
+    name: formData.get("name"),
+    slug: formData.get("slug"),
+    style: formData.get("style"),
+  });
+
+  if (!parsed.success) {
+    redirect("/admin?error=beer-invalid");
+  }
+
+  const brewery = await db.brewery.findUnique({
+    where: { slug: parsed.data.brewerySlug },
+    select: { id: true },
+  });
+
+  if (!brewery) {
+    redirect("/admin?error=brewery-missing");
+  }
+
+  await db.beer.update({
+    where: { id: parsed.data.beerId },
+    data: {
+      abv: parsed.data.abv,
+      breweryId: brewery.id,
+      description: parsed.data.description,
+      featured: parsed.data.featured,
+      ibu: parsed.data.ibu,
+      name: parsed.data.name,
+      slug: parsed.data.slug,
+      style: parsed.data.style,
+    },
+  });
+
+  revalidateAdminSurfaces();
+}
+
+export async function deleteBeerAction(formData: FormData) {
+  await requireAdminSession();
+  const parsed = deleteEntitySchema.safeParse({ id: formData.get("beerId") });
+
+  if (!parsed.success) {
+    redirect("/admin?error=beer-delete");
+  }
+
+  await db.beer.delete({ where: { id: parsed.data.id } });
+  revalidateAdminSurfaces();
+}
+
+export async function updateRouteAction(formData: FormData) {
+  await requireAdminSession();
+
+  const parsed = routeUpdateSchema.safeParse({
+    city: formData.get("city"),
+    distanceKm: formData.get("distanceKm"),
+    durationMinutes: formData.get("durationMinutes"),
+    highlights: formData.get("highlights"),
+    name: formData.get("name"),
+    routeId: formData.get("routeId"),
+    slug: formData.get("slug"),
+    stopSlugs: formData.get("stopSlugs"),
+    summary: formData.get("summary"),
+    vibe: formData.get("vibe"),
+  });
+
+  if (!parsed.success) {
+    redirect("/admin?error=route-invalid");
+  }
+
+  const breweries = await db.brewery.findMany({
+    where: { slug: { in: parsed.data.stopSlugs } },
+    select: { id: true, slug: true },
+  });
+
+  if (breweries.length !== parsed.data.stopSlugs.length) {
+    redirect("/admin?error=route-stops");
+  }
+
+  const breweryBySlug = new Map(
+    breweries.map((brewery) => [brewery.slug, brewery.id]),
+  );
+
+  await db.route.update({
+    where: { id: parsed.data.routeId },
+    data: {
+      city: parsed.data.city,
+      distanceKm: parsed.data.distanceKm,
+      durationMinutes: parsed.data.durationMinutes,
+      name: parsed.data.name,
+      slug: parsed.data.slug,
+      summary: parsed.data.summary,
+      vibe: parsed.data.vibe,
+      stops: {
+        deleteMany: {},
+        create: parsed.data.stopSlugs.map((slug, index) => ({
+          breweryId: breweryBySlug.get(slug)!,
+          position: index,
+          recommendedPour: parsed.data.highlights[index],
+        })),
+      },
+    },
+  });
+
+  revalidateAdminSurfaces();
+}
+
+export async function deleteRouteAction(formData: FormData) {
+  await requireAdminSession();
+  const parsed = deleteEntitySchema.safeParse({ id: formData.get("routeId") });
+
+  if (!parsed.success) {
+    redirect("/admin?error=route-delete");
+  }
+
+  await db.route.delete({ where: { id: parsed.data.id } });
+  revalidateAdminSurfaces();
+}
+
+export async function updateReviewAction(formData: FormData) {
+  await requireAdminSession();
+
+  const parsed = reviewUpdateSchema.safeParse({
+    authorName: formData.get("authorName"),
+    body: formData.get("body"),
+    published: formData.get("published"),
+    rating: formData.get("rating"),
+    reviewId: formData.get("reviewId"),
+    title: formData.get("title"),
+    visitedAt: formData.get("visitedAt"),
+  });
+
+  if (!parsed.success) {
+    redirect("/admin?error=review-invalid");
+  }
+
+  await db.review.update({
+    where: { id: parsed.data.reviewId },
+    data: {
+      authorName: parsed.data.authorName,
+      body: parsed.data.body,
+      published: parsed.data.published === "true",
+      rating: parsed.data.rating,
+      title: parsed.data.title,
+      visitedAt: parsed.data.visitedAt ? new Date(parsed.data.visitedAt) : null,
+    },
+  });
+
+  revalidateAdminSurfaces();
+}
+
+export async function deleteReviewAction(formData: FormData) {
+  await requireAdminSession();
+  const parsed = deleteEntitySchema.safeParse({ id: formData.get("reviewId") });
+
+  if (!parsed.success) {
+    redirect("/admin?error=review-delete");
+  }
+
+  await db.review.delete({ where: { id: parsed.data.id } });
+  revalidateAdminSurfaces();
+}
+
+export async function updateUserAction(formData: FormData) {
+  const session = await requireAdminSession();
+
+  const parsed = userUpdateSchema.safeParse({
+    city: formData.get("city"),
+    name: formData.get("name"),
+    role: formData.get("role"),
+    userId: formData.get("userId"),
+  });
+
+  if (!parsed.success) {
+    redirect("/admin?error=user-role");
+  }
+
+  if (
+    session.user.id === parsed.data.userId &&
+    parsed.data.role !== UserRole.ADMIN
+  ) {
+    redirect("/admin?error=self-demote");
+  }
+
+  if (parsed.data.role !== UserRole.ADMIN) {
+    await assertAdminMutationAllowed(session.user.id, parsed.data.userId);
+  }
+
+  await db.user.update({
+    where: { id: parsed.data.userId },
+    data: {
+      city: parsed.data.city ?? null,
+      name: parsed.data.name ?? null,
+      role: parsed.data.role,
+    },
+  });
+
+  revalidateAdminSurfaces();
+}
+
+export async function deleteUserAction(formData: FormData) {
+  const session = await requireAdminSession();
+  const parsed = deleteEntitySchema.safeParse({ id: formData.get("userId") });
+
+  if (!parsed.success) {
+    redirect("/admin?error=user-delete");
+  }
+
+  await assertAdminMutationAllowed(session.user.id, parsed.data.id);
+
+  await db.user.delete({ where: { id: parsed.data.id } });
+  revalidateAdminSurfaces();
 }

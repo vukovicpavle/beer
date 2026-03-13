@@ -21,13 +21,22 @@ export function isAdminUser(
 }
 
 export async function getAdminSnapshot() {
-  const [breweries, featuredBeers, metrics, reviews, routes, users] =
-    await Promise.all([
-      db.brewery.findMany({ orderBy: { name: "asc" } }),
+  const [breweries, beers, metrics, reviews, routes, users] = await Promise.all(
+    [
+      db.brewery.findMany({
+        orderBy: { name: "asc" },
+        include: {
+          _count: {
+            select: {
+              beers: true,
+              routeStops: true,
+            },
+          },
+        },
+      }),
       db.beer.findMany({
         include: { brewery: true },
         orderBy: [{ featured: "desc" }, { updatedAt: "desc" }],
-        take: 8,
       }),
       Promise.all([
         db.user.count(),
@@ -41,18 +50,15 @@ export async function getAdminSnapshot() {
       db.review.findMany({
         include: { beer: { include: { brewery: true } }, user: true },
         orderBy: { createdAt: "desc" },
-        take: 10,
       }),
       db.route.findMany({
         include: {
           stops: { include: { brewery: true }, orderBy: { position: "asc" } },
         },
         orderBy: { updatedAt: "desc" },
-        take: 6,
       }),
       db.user.findMany({
         orderBy: [{ role: "desc" }, { name: "asc" }],
-        take: 10,
         include: {
           _count: {
             select: {
@@ -62,19 +68,36 @@ export async function getAdminSnapshot() {
           },
         },
       }),
-    ]);
+    ],
+  );
 
   return {
     breweries: breweries.map((brewery) => ({
+      beerCount: brewery._count.beers,
+      city: brewery.city,
+      country: brewery.country,
+      description: brewery.description,
+      heroBeer: brewery.heroBeer,
       id: brewery.id,
+      latitude: brewery.latitude,
+      longitude: brewery.longitude,
       name: brewery.name,
       slug: brewery.slug,
+      specialty: brewery.specialty,
+      stopCount: brewery._count.routeStops,
+      tags: brewery.tags,
+      website: brewery.website,
     })),
-    featuredBeers: featuredBeers.map((beer) => ({
+    beers: beers.map((beer) => ({
+      abv: beer.abv,
       breweryName: beer.brewery.name,
+      brewerySlug: beer.brewery.slug,
+      description: beer.description,
       featured: beer.featured,
       id: beer.id,
+      ibu: beer.ibu,
       name: beer.name,
+      slug: beer.slug,
       style: beer.style,
     })),
     metrics: {
@@ -91,7 +114,10 @@ export async function getAdminSnapshot() {
       beerName: review.beer.name,
       breweryName: review.beer.brewery.name,
       createdAt: review.createdAt.toISOString(),
+      visitedAt: review.visitedAt?.toISOString() ?? null,
       id: review.id,
+      body: review.body,
+      beerSlug: review.beer.slug,
       published: review.published,
       rating: review.rating,
       title: review.title,
@@ -99,9 +125,16 @@ export async function getAdminSnapshot() {
     })),
     routes: routes.map((route) => ({
       city: route.city,
+      distanceKm: route.distanceKm,
+      durationMinutes: route.durationMinutes,
+      highlights: route.stops.flatMap((stop) =>
+        stop.recommendedPour ? [stop.recommendedPour] : [],
+      ),
       id: route.id,
       name: route.name,
+      slug: route.slug,
       stopCount: route.stops.length,
+      stopSlugs: route.stops.map((stop) => stop.brewery.slug),
       summary: route.summary,
       vibe: route.vibe,
     })),
